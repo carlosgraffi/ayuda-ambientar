@@ -12,6 +12,7 @@ import { getTenants } from "@/lib/content";
 import { instancePath } from "@/lib/urls";
 import { num, relativeTime } from "@/lib/format";
 import { TopBar } from "@/components/site/TopBar";
+import { LatentNotice } from "@/components/site/LatentNotice";
 
 /**
  * La portada de la plataforma: qué emergencias hay relevadas y cuántas
@@ -133,6 +134,8 @@ export default async function Page() {
   const activas = instancias.filter(enCurso);
   const abiertas = instancias.filter((t) => !enCurso(t) && !estaCerrada(t));
   const cerradas = instancias.filter(estaCerrada);
+  // Modo latente: no hay nada abierto. Ver LatentNotice.
+  const latente = activas.length === 0 && abiertas.length === 0;
 
   return (
     <>
@@ -147,6 +150,14 @@ export default async function Page() {
           <p className="lead mt-5">{brand.description}</p>
         </section>
 
+        {latente && (
+          <section className="section-subtle">
+            <div className="container section-tight">
+              <LatentNotice />
+            </div>
+          </section>
+        )}
+
         <section className="section-subtle">
           <div className="container section-tight">
             <Grupo titulo="Ocurriendo ahora" instancias={activas} />
@@ -157,7 +168,11 @@ export default async function Page() {
             />
             <Grupo
               titulo="Campañas cerradas"
-              nota="Quedan publicadas como registro. Ya no verificamos que esas cuentas sigan activas, así que no invitan a transferir."
+              nota={
+                latente
+                  ? undefined
+                  : "Quedan publicadas como registro. Ya no verificamos que esas cuentas sigan activas, así que no invitan a transferir."
+              }
               instancias={cerradas}
             />
           </div>
