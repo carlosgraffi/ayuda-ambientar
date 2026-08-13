@@ -17,7 +17,9 @@
 --    Un equipo no puede ver ni tocar los datos de otro.
 -- ═══════════════════════════════════════════════════════════════════════
 
-create extension if not exists "pgcrypto";
+-- `gen_random_uuid()` es parte del núcleo de Postgres desde la 13, así que
+-- no hace falta habilitar pgcrypto. Se evita además que la extensión se
+-- cree en `public` cuando en un proyecto hospedado vive en `extensions`.
 
 -- ── Tipos ──────────────────────────────────────────────────────────────
 create type disaster_type as enum ('fuego', 'agua', 'viento');

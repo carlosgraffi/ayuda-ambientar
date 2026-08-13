@@ -154,17 +154,28 @@ poder publicar.
 
 1. En <https://supabase.com/dashboard>, **New project**. Región: São Paulo
    (la más cercana). Guardá la contraseña de la base.
-2. Conectá el repo y aplicá el esquema:
+2. Vinculá tu carpeta local con el proyecto. El *reference ID* está en
+   Project Settings → General, y también es el subdominio de la URL
+   (`https://<ref>.supabase.co`). Pide la contraseña de la base, la que
+   pusiste al crear el proyecto:
 
 ```bash
 npx supabase link --project-ref <tu-ref>
 ```
 
+3. Creá las tablas. Esto aplica `supabase/migrations/` sobre el proyecto
+   remoto — hasta que no corra, la base está vacía y el seed no tiene
+   dónde escribir:
+
 ```bash
 npx supabase db push
 ```
 
-3. Sembrá el contenido actual:
+   *Si preferís no usar el CLI:* copiá el contenido de
+   `supabase/migrations/20260813000000_init.sql` y pegalo en el **SQL
+   Editor** del panel de Supabase. Hace exactamente lo mismo.
+
+4. Sembrá el contenido actual:
 
 ```bash
 SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run seed
