@@ -1,0 +1,945 @@
+/* ------------------------------------------------------------------ *
+ * don.ar — design system.
+ *
+ * Portado del sistema de ambient.ar (Rediseñ.ar). Los tokens y las clases
+ * de componente vienen de `ambientar/app/globals.css`, que a su vez viene
+ * del proyecto de Claude Design (tokens/*.css, components/*). Esto es CSS
+ * plano: Tailwind se usa para utilidades de layout, no para el sistema.
+ *
+ * Diferencias respecto de ambient.ar, y por qué:
+ *
+ * 1. ambient.ar es un sitio de marketing con política de cero webfonts por
+ *    huella de carbono. Esto es una superficie de producto: sí carga
+ *    Bricolage Grotesque, igual que la app y MaRiA.
+ * 2. Se agrega el color funcional por tipo de desastre (fuego / agua /
+ *    viento) y la rampa de riesgo de 5 pasos. Ver §COLOR FUNCIONAL.
+ * 3. `.btn-primary` es TINTA, no verde. Ver §BOTONES.
+ *
+ * Tema: html[data-theme="light" | "dark"], fijado antes del primer paint
+ * en layout.tsx.
+ * ------------------------------------------------------------------ */
+
+@import "tailwindcss";
+
+/* ============ TOKENS · color ============ */
+:root {
+  /* Neutros — fríos con un velo verde, nunca gris puro */
+  --ink-1000: #07100c;
+  --ink-900: #0d1712;
+  --ink-800: #16211b;
+  --ink-700: #2a3831;
+  --ink-600: #48584f;
+  --ink-500: #6b7b72;
+  --ink-400: #97a59c;
+  --ink-300: #c3cdc6;
+  --ink-200: #dfe6e1;
+  --ink-100: #edf1ee;
+  --ink-50: #f6f8f6;
+  --white: #ffffff;
+
+  /* Verde de marca. --verde-500 = hsl(142 76% 36%).
+     OJO: acá el verde NO es el color de acción. Ver §BOTONES. */
+  --verde-50: #ecfaf0;
+  --verde-100: #d2f2dd;
+  --verde-200: #a5e4bc;
+  --verde-300: #6fd198;
+  --verde-400: #37b972;
+  --verde-500: #16a24a;
+  --verde-600: #0f8340;
+  --verde-700: #0c6633;
+  --verde-800: #0a4d28;
+  --verde-900: #07331b;
+
+  --danger: #dc2828;
+  --warning: #d97706;
+
+  /* Alias semánticos — tema claro (por defecto) */
+  --bg-page: var(--white);
+  --bg-subtle: var(--ink-50);
+  --bg-sunken: var(--ink-100);
+  --bg-inverse: var(--ink-900);
+
+  --surface-card: var(--white);
+  --surface-card-subtle: var(--ink-50);
+  --surface-overlay: var(--white);
+
+  --text-strong: var(--ink-900);
+  --text-body: var(--ink-800);
+  --text-muted: var(--ink-600);
+  --text-faint: var(--ink-400);
+  --text-on-dark: var(--ink-50);
+  --text-link: var(--verde-600);
+  --text-link-hover: var(--verde-700);
+
+  --border-hairline: var(--ink-200);
+  --border-strong: var(--ink-300);
+  --border-focus: var(--verde-500);
+
+  --scrim: rgba(7, 16, 12, 0.42);
+}
+
+/* ============ COLOR FUNCIONAL ============
+ *
+ * El color nombra QUÉ DESASTRE ES. Alguien que llega a la página reconoce
+ * la emergencia por el color antes de leer el título: eso está trabajando,
+ * así que se queda.
+ *
+ * La consecuencia, que es la regla más importante de este archivo: si el
+ * color ya está diciendo "tipo de desastre", no puede además decir
+ * "acción". Por eso el botón primario es tinta (§BOTONES) y el acento del
+ * desastre queda para el ícono, el chip de estado y la barra de tipo.
+ *
+ * Una instancia nueva no elige colores: elige `data-disaster`.
+ */
+:root {
+  --fuego-50: #fff7ed;
+  --fuego-100: #ffedd5;
+  --fuego-500: #f97316;
+  --fuego-600: #ea580c;
+  --fuego-700: #c2410c;
+
+  --agua-50: #eff6ff;
+  --agua-100: #dbeafe;
+  --agua-500: #3b82f6;
+  --agua-600: #2563eb;
+  --agua-700: #1d4ed8;
+
+  --viento-50: #f8fafc;
+  --viento-100: #f1f5f9;
+  --viento-500: #64748b;
+  --viento-600: #475569;
+  --viento-700: #334155;
+
+  /* Por defecto, sin data-disaster, el acento es tinta: nunca inventamos
+     un color de emergencia que no se declaró. */
+  --accent-soft: var(--ink-100);
+  --accent-500: var(--ink-500);
+  --accent-600: var(--ink-600);
+  --accent-ink: var(--ink-800);
+}
+
+[data-disaster="fuego"] {
+  --accent-soft: var(--fuego-100);
+  --accent-500: var(--fuego-500);
+  --accent-600: var(--fuego-600);
+  --accent-ink: var(--fuego-700);
+}
+[data-disaster="agua"] {
+  --accent-soft: var(--agua-100);
+  --accent-500: var(--agua-500);
+  --accent-600: var(--agua-600);
+  --accent-ink: var(--agua-700);
+}
+[data-disaster="viento"] {
+  --accent-soft: var(--viento-100);
+  --accent-500: var(--viento-500);
+  --accent-600: var(--viento-600);
+  --accent-ink: var(--viento-700);
+}
+
+/* Rampa de riesgo — 5 pasos, ocre → rojo.
+   El verde NUNCA aparece acá: "seguro" no es una afirmación que hagamos.
+   Excepción única: los semáforos oficiales de organismos del Estado
+   (SMN, GDACS, IDEAM) se replican con SU color exacto, verde incluido, y
+   no se rediseñan. Esos tokens entran en F5 con el proveedor de riesgo. */
+:root {
+  --riesgo-1: #eab308;
+  --riesgo-2: #f59e0b;
+  --riesgo-3: #f97316;
+  --riesgo-4: #ea580c;
+  --riesgo-5: #b91c1c;
+  --riesgo-1-soft: #fef9c3;
+  --riesgo-2-soft: #fef3c7;
+  --riesgo-3-soft: #ffedd5;
+  --riesgo-4-soft: #fed7aa;
+  --riesgo-5-soft: #fee2e2;
+
+  /* "Sin señal" es un estado de primera clase, nunca un vacío. El resto
+     del mapa no es "bajo riesgo": es falta de reportes. */
+  --sin-senal: var(--ink-400);
+  --sin-senal-soft: var(--ink-100);
+}
+
+/* Marcas de terceros. NO se restilan, en ningún tema y bajo ningún
+   concepto: en un botón de donación el reconocimiento es toda la función,
+   y dudar cuesta una donación. */
+:root {
+  --brand-mercadopago: #009ee3;
+  --brand-mercadopago-hover: #0089c7;
+  --brand-whatsapp: #25d366;
+  --brand-whatsapp-hover: #1eb455;
+}
+
+html[data-theme="dark"] {
+  --bg-page: var(--ink-1000);
+  --bg-subtle: var(--ink-900);
+  --bg-sunken: #050b08;
+  --bg-inverse: var(--ink-50);
+
+  --surface-card: var(--ink-900);
+  --surface-card-subtle: var(--ink-800);
+  --surface-overlay: var(--ink-800);
+
+  --text-strong: #f2f6f3;
+  --text-body: var(--ink-100);
+  --text-muted: var(--ink-400);
+  --text-faint: var(--ink-500);
+  --text-link: var(--verde-300);
+  --text-link-hover: var(--verde-200);
+
+  --border-hairline: #223029;
+  --border-strong: #32433a;
+
+  --scrim: rgba(3, 8, 6, 0.62);
+
+  /* Los acentos suaves son fondos claros: en oscuro se vuelven veladuras */
+  --accent-soft: rgba(151, 165, 156, 0.16);
+  --sin-senal-soft: rgba(151, 165, 156, 0.14);
+}
+html[data-theme="dark"][data-disaster="fuego"] {
+  --accent-soft: rgba(249, 115, 22, 0.18);
+  --accent-ink: #fdba74;
+}
+html[data-theme="dark"][data-disaster="agua"] {
+  --accent-soft: rgba(59, 130, 246, 0.18);
+  --accent-ink: #93c5fd;
+}
+html[data-theme="dark"][data-disaster="viento"] {
+  --accent-soft: rgba(100, 116, 139, 0.2);
+  --accent-ink: #cbd5e1;
+}
+
+/* ============ TOKENS · typography ============ */
+:root {
+  /* Bricolage Grotesque, cargada por next/font en layout.tsx.
+     El mono es el stack del sistema: las etiquetas y los alias bancarios
+     no justifican otra descarga. */
+  --font-display: var(--font-bricolage), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-bricolage), system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    monospace;
+
+  --fw-hairline: 200;
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+
+  --fs-display-1: clamp(2.5rem, 6vw, 4.5rem);
+  --fs-display-2: clamp(2rem, 4.4vw, 3.25rem);
+  --fs-h1: clamp(2rem, 3.6vw, 3rem);
+  --fs-h2: clamp(1.5rem, 2.4vw, 2rem);
+  --fs-h3: 1.25rem;
+  --fs-h4: 1.125rem;
+
+  --fs-body-lg: 1.0625rem;
+  --fs-body: 1rem; /* piso para toda la prosa — nunca más chico */
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.75rem;
+
+  --fs-metric-xl: clamp(3rem, 7vw, 5rem);
+  --fs-metric-lg: 3rem;
+  --fs-metric-md: 2.25rem;
+  --fs-metric-sm: 1.625rem;
+
+  --lh-display: 1.02;
+  --lh-tight: 1.1;
+  --lh-heading: 1.18;
+  --lh-body: 1.6;
+  --lh-relaxed: 1.7;
+
+  --ls-display: -0.035em;
+  --ls-heading: -0.02em;
+  --ls-body: 0em;
+  --ls-metric: -0.04em;
+  --ls-eyebrow: 0.14em;
+
+  --type-display-1: var(--fw-light) var(--fs-display-1) / var(--lh-display)
+    var(--font-display);
+  --type-display-2: var(--fw-light) var(--fs-display-2) / var(--lh-display)
+    var(--font-display);
+  --type-h1: var(--fw-semibold) var(--fs-h1) / var(--lh-heading)
+    var(--font-display);
+  --type-h2: var(--fw-semibold) var(--fs-h2) / var(--lh-heading)
+    var(--font-display);
+  --type-h3: var(--fw-semibold) var(--fs-h3) / var(--lh-tight)
+    var(--font-display);
+  --type-body: var(--fw-regular) var(--fs-body) / var(--lh-body)
+    var(--font-sans);
+  --type-body-lg: var(--fw-regular) var(--fs-body-lg) / var(--lh-relaxed)
+    var(--font-sans);
+  --type-mono-label: var(--fw-medium) var(--fs-xs) / 1.3 var(--font-mono);
+}
+
+/* ============ TOKENS · spacing / radius / elevation / glass / motion ==== */
+:root {
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
+
+  --section-y: clamp(48px, 7vw, 96px);
+  --section-y-tight: clamp(32px, 5vw, 64px);
+
+  --container-max: 1200px;
+  --container-text: 680px;
+  --gutter: clamp(16px, 4vw, 48px);
+  --touch-min: 44px;
+
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-2xl: 36px;
+  --r-pill: 999px;
+  --r-card: 24px;
+  --r-card-inner: var(--r-md);
+  --r-control: var(--r-pill);
+  --r-field: var(--r-md);
+  --r-sheet: var(--r-xl);
+
+  /* Sombras: suaves, anchas y con tinte verde — nunca negro neutro */
+  --shadow-xs: 0 1px 2px rgba(7, 16, 12, 0.04);
+  --shadow-sm: 0 1px 2px rgba(7, 16, 12, 0.04),
+    0 2px 6px -2px rgba(7, 16, 12, 0.06);
+  --shadow-md: 0 2px 4px rgba(7, 16, 12, 0.03),
+    0 8px 20px -6px rgba(7, 16, 12, 0.1);
+  --shadow-lg: 0 4px 8px rgba(7, 16, 12, 0.04),
+    0 18px 44px -14px rgba(7, 16, 12, 0.16);
+  --shadow-xl: 0 8px 16px rgba(7, 16, 12, 0.05),
+    0 32px 80px -24px rgba(7, 16, 12, 0.22);
+  --elevate-1: rgba(7, 16, 12, 0.035);
+  --elevate-2: rgba(7, 16, 12, 0.075);
+
+  /* Vidrio esmerilado — SOLO para capas que flotan sobre contenido.
+     Una tarjeta estática sobre un fondo plano no tiene nada que
+     desenfocar: va sólida (.card). */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(7, 16, 12, 0.06);
+  --glass-blur: saturate(1.5) blur(20px);
+
+  /* Movimiento — todo desacelera al salir */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-instant: 90ms;
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 380ms;
+  --dur-slower: 620ms;
+  --rise: 12px;
+  --stagger: 100ms;
+  --transition-control: color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-out-soft),
+    transform var(--dur-base) var(--ease-out-soft);
+}
+
+html[data-theme="dark"] {
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 10px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.45),
+    0 22px 50px -16px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 8px 18px rgba(0, 0, 0, 0.5),
+    0 36px 90px -28px rgba(0, 0, 0, 0.8);
+  --elevate-1: rgba(255, 255, 255, 0.045);
+  --elevate-2: rgba(255, 255, 255, 0.09);
+  --glass-bg: rgba(13, 23, 18, 0.66);
+  --glass-bg-strong: rgba(13, 23, 18, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.09);
+}
+
+/* Re-expone al motor de utilidades de Tailwind sólo lo que hace falta
+   escribir como clase suelta en el markup. El resto del sistema vive en
+   las clases de componente de abajo, no en utilidades. */
+@theme inline {
+  --color-ink-900: var(--ink-900);
+  --color-ink-600: var(--ink-600);
+  --color-ink-400: var(--ink-400);
+  --color-ink-200: var(--ink-200);
+  --color-ink-100: var(--ink-100);
+  --color-ink-50: var(--ink-50);
+  --color-accent: var(--accent-500);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius-card: var(--r-card);
+  --radius-pill: var(--r-pill);
+}
+
+/* ============ BASE ============
+ *
+ * Todo lo de acá abajo va dentro de `@layer base` y `@layer components`, y
+ * no es un detalle: en Tailwind 4 las utilidades viven en `@layer
+ * utilities`, y **el CSS sin capa le gana a cualquier CSS en capa,
+ * independientemente de la especificidad**. Sin envolver, este reset
+ * (`* { padding: 0 }`) pisaría silenciosamente todo `p-6` / `mt-2` /
+ * `pl-11` del proyecto entero.
+ *
+ * Con las capas puestas, el orden queda como corresponde:
+ * base < components < utilities. Una utilidad suelta puede ajustar una
+ * `.card` sin pelear, que es justamente para lo que sirven.
+ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font: var(--type-body);
+    letter-spacing: var(--ls-body);
+    color: var(--text-body);
+    background: var(--bg-page);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    text-wrap: pretty;
+    transition: background var(--dur-slow) var(--ease-standard),
+      color var(--dur-slow) var(--ease-standard);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--text-strong);
+    text-wrap: balance;
+  }
+  /* El gesto de la marca: titular liviano con UNA palabra en 800 */
+  h1 b,
+  h2 b,
+  h3 b {
+    font-weight: var(--fw-black);
+  }
+
+  a {
+    color: var(--text-link);
+    text-decoration-color: color-mix(in oklab, var(--text-link) 40%, transparent);
+    text-underline-offset: 0.18em;
+    transition: color var(--dur-fast) var(--ease-standard);
+  }
+  a:hover {
+    color: var(--text-link-hover);
+    text-decoration-color: currentColor;
+  }
+
+  /* Foco visible y verde. El naranja acá significa "fuego", no "estás acá". */
+  :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    border-radius: var(--r-xs);
+  }
+
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Números: tabulares en todo lugar donde se comparen entre sí */
+  .num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--ls-metric);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@layer components {
+  /* ============ MOTION ============ */
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--rise));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .rise {
+    animation: rise-in var(--dur-slow) var(--ease-out-soft) both;
+  }
+  .fade {
+    animation: fade-in var(--dur-slow) var(--ease-out-soft) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --rise: 0px;
+      --stagger: 0ms;
+      --dur-base: 1ms;
+      --dur-slow: 1ms;
+      --dur-slower: 1ms;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* ============ LAYOUT ============ */
+  .container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding-inline: var(--gutter);
+  }
+  .container-text {
+    max-width: var(--container-text);
+  }
+  .section {
+    padding-block: var(--section-y);
+  }
+  .section-tight {
+    padding-block: var(--section-y-tight);
+  }
+  .section-subtle {
+    background: var(--bg-subtle);
+  }
+
+  .section-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-8);
+  }
+
+  .display-1 {
+    font: var(--type-display-1);
+    letter-spacing: var(--ls-display);
+    color: var(--text-strong);
+  }
+  .display-2 {
+    font: var(--type-display-2);
+    letter-spacing: var(--ls-display);
+    color: var(--text-strong);
+  }
+  .heading-1 {
+    font: var(--type-h1);
+    letter-spacing: var(--ls-heading);
+    color: var(--text-strong);
+  }
+  .heading-2 {
+    font: var(--type-h2);
+    letter-spacing: var(--ls-heading);
+    color: var(--text-strong);
+  }
+  .heading-3 {
+    font: var(--type-h3);
+    letter-spacing: var(--ls-heading);
+    color: var(--text-strong);
+  }
+  .lead {
+    font: var(--type-body-lg);
+    color: var(--text-muted);
+    max-width: 60ch;
+  }
+
+  /* ============ VIDRIO ============
+     Regla del sistema: sólo para capas que FLOTAN sobre contenido — la barra
+     fija, el menú móvil, el modal. No existe una "tarjeta de vidrio". */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+  }
+  @supports not (
+    (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+  ) {
+    .glass {
+      background: var(--glass-bg-strong);
+    }
+  }
+
+  /* ============ MARCA ============ */
+  .brand {
+    display: inline-flex;
+    align-items: baseline;
+    font-family: var(--font-display);
+    font-weight: var(--fw-regular);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text-strong);
+    text-decoration: none;
+    transition: opacity var(--dur-fast) var(--ease-standard);
+  }
+  .brand:hover {
+    color: var(--text-strong);
+    opacity: 0.8;
+  }
+  .brand b {
+    font-weight: var(--fw-black);
+  }
+  .brand-sm {
+    font-size: 17px;
+  }
+  .brand-md {
+    font-size: 21px;
+  }
+
+  /* Rótulo mono: 12px, versalitas, 0.14em de tracking. Es el motivo que
+     acompaña a todo número grande. */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font: var(--type-mono-label);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .eyebrow .sep {
+    opacity: 0.5;
+  }
+
+  /* ============ BOTONES ============
+   *
+   * LA REGLA: el botón primario de este sitio es TINTA, no verde ni naranja.
+   *
+   * El naranja ya significa "fuego" y el azul "agua"; si además significaran
+   * "acción", el mismo color diría dos cosas en la misma pantalla — hoy en
+   * producción "Ver cómo ayudar" es del mismo naranja que el ícono de llama
+   * que está dos líneas más arriba. El verde de marca tampoco: queda para
+   * enlaces y foco.
+   *
+   * Por eso acá no hay ningún `.btn-brand`. Es a propósito.
+   */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    font-family: var(--font-sans);
+    font-weight: var(--fw-medium);
+    letter-spacing: -0.005em;
+    line-height: 1;
+    border: 1px solid transparent;
+    border-radius: var(--r-control);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: var(--transition-control);
+  }
+  .btn:active {
+    transform: scale(0.978);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-sm {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: var(--fs-sm);
+  }
+  .btn-md {
+    min-height: 44px;
+    padding: 0 20px;
+    font-size: var(--fs-body);
+  }
+  .btn-lg {
+    min-height: 52px;
+    padding: 0 26px;
+    font-size: var(--fs-body-lg);
+    gap: var(--sp-3);
+  }
+
+  /* Primario = tinta */
+  .btn-primary {
+    background: var(--ink-900);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-primary:hover {
+    background: var(--ink-800);
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+  }
+  html[data-theme="dark"] .btn-primary {
+    background: var(--ink-50);
+    color: var(--ink-900);
+  }
+  html[data-theme="dark"] .btn-primary:hover {
+    background: var(--white);
+    color: var(--ink-900);
+  }
+
+  .btn-secondary {
+    background: var(--surface-card);
+    color: var(--text-strong);
+    border-color: var(--border-hairline);
+    box-shadow: var(--shadow-xs);
+  }
+  .btn-secondary:hover {
+    background: var(--elevate-1);
+    color: var(--text-strong);
+    border-color: var(--border-strong);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-strong);
+  }
+  .btn-ghost:hover {
+    background: var(--elevate-1);
+    color: var(--text-strong);
+  }
+
+  .btn-icon {
+    padding: 0;
+  }
+  .btn-icon.btn-sm {
+    width: 36px;
+    height: 36px;
+  }
+  .btn-icon.btn-md {
+    width: 44px;
+    height: 44px;
+  }
+  .btn-icon.btn-lg {
+    width: 52px;
+    height: 52px;
+  }
+
+  /* Marcas de terceros. Se reproducen exactas y no se restilan: sólo el
+     radio y la tipografía siguen al sistema. */
+  .btn-mercadopago {
+    background: var(--brand-mercadopago);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-mercadopago:hover {
+    background: var(--brand-mercadopago-hover);
+    color: var(--white);
+  }
+  .btn-whatsapp {
+    background: var(--brand-whatsapp);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-whatsapp:hover {
+    background: var(--brand-whatsapp-hover);
+    color: var(--white);
+  }
+
+  /* El toggle muestra el ícono del modo al que se puede cambiar */
+  .theme-icon {
+    display: none;
+    line-height: 0;
+  }
+  html[data-theme="light"] .theme-icon-moon {
+    display: block;
+  }
+  html[data-theme="dark"] .theme-icon-sun {
+    display: block;
+  }
+
+  /* ============ CHIPS Y BADGES ============ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 11px;
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    line-height: 1.3;
+    border: 1px solid transparent;
+    border-radius: var(--r-pill);
+    white-space: nowrap;
+  }
+  .badge-neutral {
+    background: var(--bg-sunken);
+    color: var(--text-muted);
+  }
+  .badge-outline {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: var(--border-hairline);
+  }
+  /* Estado del desastre: el único lugar donde el acento del tipo aparece
+     como fondo. */
+  .badge-accent {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+  .badge-warning {
+    background: var(--riesgo-2-soft);
+    color: #92400e;
+  }
+  html[data-theme="dark"] .badge-warning {
+    background: rgba(217, 119, 6, 0.18);
+    color: #fde68a;
+  }
+  /* Sin señal: dicho, no escondido. Borde punteado a propósito. */
+  .badge-sin-senal {
+    background: var(--sin-senal-soft);
+    color: var(--text-muted);
+    border: 1px dashed var(--border-strong);
+  }
+
+  /* Chip de filtro: seleccionado va TINTA, no acento — seleccionar no es
+     una acción, y el acento ya está diciendo el tipo de desastre. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 36px;
+    padding: 0 14px;
+    font-family: var(--font-sans);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--text-muted);
+    background: var(--surface-card);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition-control);
+  }
+  .chip:hover {
+    background: var(--elevate-1);
+    border-color: var(--border-strong);
+    color: var(--text-strong);
+  }
+  .chip[aria-pressed="true"],
+  .chip[data-selected="true"] {
+    background: var(--ink-900);
+    border-color: var(--ink-900);
+    color: var(--white);
+  }
+  html[data-theme="dark"] .chip[aria-pressed="true"],
+  html[data-theme="dark"] .chip[data-selected="true"] {
+    background: var(--ink-50);
+    border-color: var(--ink-50);
+    color: var(--ink-900);
+  }
+  .chip-count {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.6;
+  }
+
+  /* ============ TARJETAS ============ */
+  .card {
+    position: relative;
+    border-radius: var(--r-card);
+    padding: var(--sp-6);
+    color: var(--text-body);
+    background: var(--surface-card);
+    border: 1px solid var(--border-hairline);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--dur-base) var(--ease-out-soft),
+      transform var(--dur-base) var(--ease-out-soft),
+      border-color var(--dur-fast) var(--ease-standard);
+  }
+  .card-subtle {
+    background: var(--surface-card-subtle);
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .card-outline {
+    background: transparent;
+    box-shadow: none;
+  }
+  .card-hover:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+  }
+
+  /* ============ MÉTRICA ============
+     El elemento más fuerte del sistema, y el que más le falta al sitio
+     actual: hoy "25.000+ hectáreas" es un span de 14px dentro de una
+     cajita. Rótulo mono arriba, número grande y tabular, contexto abajo. */
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    align-items: flex-start;
+  }
+  .metric-label {
+    font: var(--type-mono-label);
+    letter-spacing: var(--ls-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .metric-value {
+    font: var(--fw-medium) var(--fs-metric-lg) / 0.9 var(--font-display);
+    letter-spacing: var(--ls-metric);
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-xl .metric-value {
+    font-size: var(--fs-metric-xl);
+  }
+  .metric-md .metric-value {
+    font-size: var(--fs-metric-md);
+  }
+  .metric-sm .metric-value {
+    font-size: var(--fs-metric-sm);
+  }
+  .metric-sub {
+    font: var(--fs-sm) / 1.5 var(--font-sans);
+    color: var(--text-muted);
+    max-width: 32ch;
+  }
+
+  /* Alias bancario: es lo que la gente efectivamente copia, así que va mono
+     y con cuerpo. */
+  .alias {
+    font-family: var(--font-mono);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-medium);
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+    word-break: break-all;
+  }
+}
