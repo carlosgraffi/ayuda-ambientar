@@ -70,7 +70,7 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
               />
               <div className="absolute inset-x-0 bottom-0 p-6 md:p-10">
                 <p className="eyebrow" style={{ color: "rgba(255,255,255,.72)" }}>
-                  Información chequeada a mano · {shortName}
+                  {shortName} · {tenant.year} · chequeado a mano
                 </p>
                 <h1 className="display-2 mt-3 max-w-[18ch]" style={{ color: "#fff" }}>
                   <Headline text={headline} />
@@ -82,7 +82,7 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
                archivo para una catástrofe. */
             <div className="py-8">
               <p className="eyebrow">
-                Información chequeada a mano · {shortName}
+                {shortName} · {tenant.year} · chequeado a mano
               </p>
               <h1 className="display-2 mt-3 max-w-[18ch]">
                 <Headline text={headline} />
@@ -168,7 +168,7 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
               · <a href={`mailto:${brand.contactEmail}`}>{brand.contactEmail}</a>
             </p>
             <p className="eyebrow" style={{ color: "var(--text-faint)" }}>
-              {shortName} · Revisado{" "}
+              {shortName} {tenant.year} · Revisado{" "}
               <time dateTime={lastReviewed}>{relativeTime(lastReviewed)}</time>
             </p>
           </div>

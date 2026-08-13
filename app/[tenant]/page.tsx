@@ -16,16 +16,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tenant = getTenant((await params).tenant);
   if (!tenant) return {};
 
-  const title = tenant.headline.replace(/\*\*/g, "");
+  /**
+   * Adelante lo que la gente escribe en el buscador — "incendios patagonia
+   * 2025" — y no la pregunta retórica. `absolute` saltea la plantilla que
+   * agrega la marca: con ella el título pasaba de 100 caracteres y Google
+   * lo cortaba justo donde estaba lo útil.
+   */
+  const title = `${tenant.name} ${tenant.year} · Cómo ayudar y a quién donar`;
   return {
-    title,
+    title: { absolute: title },
     description: `${tenant.lead} ${brand.description}`,
     // La misma instancia es alcanzable por su dominio propio y por el path
     // de la plataforma. Sin canónica, los buscadores reparten el
     // posicionamiento entre las dos.
     alternates: { canonical: canonicalUrl(tenant) },
     openGraph: {
-      title,
+      title: tenant.headline.replace(/\*\*/g, ""),
       description: tenant.lead,
       url: canonicalUrl(tenant),
       locale: "es_AR",

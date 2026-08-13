@@ -88,7 +88,8 @@ Mientras el registro viva en el código (hasta F3), son tres pasos:
 
 1. `content/<slug>/organizations.ts` con sus organizaciones.
 2. Una entrada en `TENANTS` (`lib/tenants.ts`) — eligiendo `disasterType`,
-   no colores.
+   no colores, más `year` y `emergencyStatus`. Con `activa` o `contencion`
+   la instancia sube al grupo "Ocurriendo ahora" de la portada.
 3. Su recuadro en `content/regions.json`, si querés mapa de focos.
 
 Queda en `ayuda.ambient.ar/<slug>`. Si además trae dominio propio, se

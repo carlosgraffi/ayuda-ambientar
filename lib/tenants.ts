@@ -51,6 +51,11 @@ export type EmergencyStatus =
   | "recuperacion"
   | "latente";
 
+/** Si la emergencia sigue ocurriendo. Decide cómo se agrupa la portada. */
+export function enCurso(t: Tenant): boolean {
+  return t.emergencyStatus === "activa" || t.emergencyStatus === "contencion";
+}
+
 export interface Tenant {
   slug: string;
   name: string;
@@ -60,6 +65,12 @@ export interface Tenant {
   lead: string;
   disasterType: DisasterType;
   emergencyStatus: EmergencyStatus;
+  /**
+   * Año de la emergencia. Sin esto, una instancia de 2025 y una de este
+   * año se ven igual, y alguien puede terminar donando a una colecta que
+   * cerró hace meses creyendo que está ayudando ahora.
+   */
+  year: number;
   countryCode: string;
   /** Dominios propios. El primero es el canónico. Vacío = sólo por path. */
   hosts: string[];
@@ -79,6 +90,7 @@ export const TENANTS: Tenant[] = [
     lead: "Bomberos, brigadas, comedores y colectas de la Comarca Andina, relevados uno por uno.",
     disasterType: "fuego",
     emergencyStatus: "recuperacion",
+    year: 2025,
     countryCode: "AR",
     hosts: ["ayudapatagonia.ar", "www.ayudapatagonia.ar"],
     hero: { src: "/portada.jpg", width: 1200, height: 400 },
@@ -95,6 +107,7 @@ export const TENANTS: Tenant[] = [
     lead: "Bomberos voluntarios y organizaciones que trabajan sobre los incendios en la provincia.",
     disasterType: "fuego",
     emergencyStatus: "recuperacion",
+    year: 2025,
     countryCode: "AR",
     hosts: [],
     lastReviewed: revCorrientes,
@@ -114,6 +127,16 @@ export const REGION_BBOX = regions as Record<string, number[]>;
 
 export function getTenant(slug: string): Tenant | undefined {
   return TENANTS.find((t) => t.slug === slug);
+}
+
+/**
+ * Las que están ocurriendo primero, y dentro de cada grupo las más
+ * recientes. Es el orden en que alguien que llega a donar las necesita.
+ */
+export function sortedTenants(): Tenant[] {
+  return [...TENANTS].sort(
+    (a, b) => Number(enCurso(b)) - Number(enCurso(a)) || b.year - a.year,
+  );
 }
 
 /** Mapa host → instancia, para resolver el dominio propio en el borde. */
