@@ -15,9 +15,28 @@ npx wrangler login
 FIRMS_API_KEY=<tu-key-nueva> npm run deploy
 ```
 
-El primer deploy crea el proyecto `ayuda-ambientar` (el nombre está en
-`wrangler.toml`) y devuelve una URL `*.pages.dev` para probar antes de
-tocar ningún dominio.
+El primer deploy crea el proyecto `ayuda-ambientar` y devuelve una URL
+`*.pages.dev` para probar antes de tocar ningún dominio.
+
+Con el repo conectado a GitHub esto ya no hace falta: cada push despliega
+solo. En **Settings → Builds** el comando es `npm run build` y el
+directorio de salida `out`.
+
+### Por qué no hay `wrangler.toml`
+
+Si el proyecto tiene uno, Cloudflare lo toma como fuente de verdad y el
+panel deja de administrar las variables planas — sólo acepta Secrets. Eso
+trae dos problemas para este proyecto:
+
+· `[vars]` se commitea, y el repo es público. La clave de NASA FIRMS no
+  puede volver a un archivo versionado: se rotó justamente porque estaba
+  publicada.
+· El archivo documenta bindings de *runtime*. Que sus variables lleguen al
+  **build** no está documentado, y si no llegan el sitio no falla: cae en
+  silencio al contenido de `content/` y nadie se entera.
+
+Sin `wrangler.toml`, las cinco variables viven en el panel, que es donde
+la documentación garantiza que el build las ve.
 
 ## 2 · La API key de NASA FIRMS
 

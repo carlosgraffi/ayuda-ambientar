@@ -11,8 +11,8 @@
     "typecheck": "tsc --noEmit",
     "seed": "tsx scripts/seed-supabase.ts",
     "test:rls": "docker exec -i supabase_db_ayudapatagonia psql -U postgres -d postgres -v ON_ERROR_STOP=1 -q < supabase/tests/rls.sql",
-    "deploy": "next build && wrangler pages deploy",
-    "cf:preview": "next build && wrangler pages dev out"
+    "deploy": "next build && wrangler pages deploy out --project-name=ayuda-ambientar",
+    "cf:preview": "next build && wrangler pages dev out --compatibility-date=2026-08-13"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
