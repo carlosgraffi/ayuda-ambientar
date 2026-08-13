@@ -19,8 +19,11 @@
  * F3, cuando el registro salga de la base, las dos leerán del mismo KV.
  */
 const SLUG_POR_HOST: Record<string, string> = {
-  "ayudapatagonia.ar": "patagonia",
-  "www.ayudapatagonia.ar": "patagonia",
+  // Apunta a la EDICIÓN VIGENTE. Al abrir una edición nueva hay que
+  // moverlo acá, si no el dominio propio sigue sirviendo la del año
+  // pasado — que además está cerrada y no invita a transferir.
+  "ayudapatagonia.ar": "patagonia-2026",
+  "www.ayudapatagonia.ar": "patagonia-2026",
 };
 
 export const onRequest: PagesFunction = async (context) => {

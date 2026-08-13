@@ -52,10 +52,18 @@ function LinkButton({ link }: { link: OrgLink }) {
 export function OrgCard({
   org,
   transfers,
+  closed = false,
   onShare,
   onCopied,
 }: {
   org: Organization;
+  /**
+   * Campaña cerrada: la tarjeta deja de ofrecer copiar y transferir.
+   * El dato queda visible como registro, pero dejar los botones sería
+   * invitar a mandar plata a una colecta que terminó — y nadie está
+   * verificando ya que esa cuenta siga siendo de quien dice ser.
+   */
+  closed?: boolean;
   /**
    * Cuánta gente copió o transfirió desde el sitio. Llega en F3 con los
    * contadores migrados de Firestore. Sin ese dato el bloque no se
@@ -163,22 +171,24 @@ export function OrgCard({
               inservible en pantallas angostas. Envuelve. */}
           <p className="alias mt-1">{channel.identifier}</p>
         </div>
-        <button
-          type="button"
-          onClick={copyAlias}
-          className="btn btn-secondary btn-sm shrink-0"
-        >
-          {copied ? (
-            <Check size={15} strokeWidth={1.75} aria-hidden />
-          ) : (
-            <Copy size={15} strokeWidth={1.75} aria-hidden />
-          )}
-          {copied ? "Copiado" : "Copiar"}
-        </button>
+        {!closed && (
+          <button
+            type="button"
+            onClick={copyAlias}
+            className="btn btn-secondary btn-sm shrink-0"
+          >
+            {copied ? (
+              <Check size={15} strokeWidth={1.75} aria-hidden />
+            ) : (
+              <Copy size={15} strokeWidth={1.75} aria-hidden />
+            )}
+            {copied ? "Copiado" : "Copiar"}
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2.5">
-        {deeplink && (
+        {deeplink && !closed && (
           <a
             href={deeplink.href}
             target="_blank"

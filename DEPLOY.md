@@ -82,19 +82,46 @@ Tiene que devolver un `301` a la raíz.
 posterga: el sitio viejo funciona. El rollback es revertir el DNS, así que
 conviene dejar Cloud Run desplegado un mes más.
 
-## 5 · Agregar una instancia nueva
+## 5 · Abrir una campaña nueva
 
-Mientras el registro viva en el código (hasta F3), son tres pasos:
+Una instancia es **una campaña: una catástrofe en un año**. `patagonia-2025`
+y `patagonia-2026` son dos, aunque hoy listen las mismas organizaciones.
 
-1. `content/<slug>/organizations.ts` con sus organizaciones.
-2. Una entrada en `TENANTS` (`lib/tenants.ts`) — eligiendo `disasterType`,
-   no colores, más `year` y `emergencyStatus`. Con `activa` o `contencion`
-   la instancia sube al grupo "Ocurriendo ahora" de la portada.
-3. Su recuadro en `content/regions.json`, si querés mapa de focos.
+Mientras el registro viva en el código (hasta F3):
 
-Queda en `ayuda.ambient.ar/<slug>`. Si además trae dominio propio, se
-agrega a `hosts` y a `SLUG_POR_HOST` en `functions/_middleware.ts`, y el
-dominio se da de alta como en el paso 3.
+1. `content/<campaña>/organizations.ts` con sus organizaciones, si el
+   territorio es nuevo. Si es una edición más de un territorio ya
+   relevado, reusá el mismo archivo.
+2. Una entrada en `TENANTS` (`lib/tenants.ts`) con `slug: "<campaña>-<año>"`,
+   el mismo `campaign` que sus ediciones anteriores, y `disasterType` —
+   no colores. Con `activa` o `contencion` sube al grupo "Ocurriendo
+   ahora" de la portada.
+3. Su recuadro en `content/regions.json`, indexado por **campaña**, no por
+   edición: el mapa es del territorio.
+4. Si el territorio tiene dominio propio, **mové `SLUG_POR_HOST` en
+   `functions/_middleware.ts` a la edición nueva.** Si te olvidás, el
+   dominio sigue sirviendo la edición del año pasado, que además está
+   cerrada y no invita a transferir.
+
+## 6 · Cerrar una campaña
+
+Poné `closedAt` con la fecha. Eso alcanza para que la página:
+
+- muestre el aviso de campaña cerrada arriba de todo, con enlace a la
+  edición vigente;
+- **deje de ofrecer copiar el alias y transferir** — el dato queda como
+  registro, pero ya no verificamos que esas cuentas sigan activas;
+- oculte el mapa de focos activos, que sería fuego de hoy junto a datos de
+  otro año;
+- publique el resumen de resultados.
+
+En `results` va lo que se haya medido. Lo que no se midió se declara en
+`notMeasured` y se muestra tal cual: **cero y "no se midió" son cosas
+distintas** y no pueden verse igual. Un cero donde falta instrumentación
+convierte un problema nuestro en un dato sobre las organizaciones.
+
+El flujo desde el panel — cerrar una campaña y generar el resumen sin
+tocar código — es parte de F4.
 
 ## Probar el enrutado por dominio antes de desplegar
 

@@ -22,9 +22,10 @@ import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 /**
- * Un recuadro por instancia. La lista vive en `content/regions.json`, que
- * también lee `lib/tenants.ts`: una sola fuente de verdad, en el único
- * formato que Node y TypeScript pueden leer sin herramientas de por medio.
+ * Un recuadro por CAMPAÑA — el territorio, no el año: las ediciones 2025 y
+ * 2026 de la Patagonia miran el mismo mapa. La lista vive en
+ * `content/regions.json`, que también lee `lib/tenants.ts`: una sola
+ * fuente de verdad, en el único formato que Node y TypeScript comparten.
  */
 const REGIONS = JSON.parse(await readFile("content/regions.json", "utf8"));
 

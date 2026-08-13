@@ -3,5 +3,7 @@
 #
 # /familias servía un registro de ejemplo con teléfono y alias inventados.
 # Se retiró; el enlace no se rompe, lleva a la instancia.
-/familias            /patagonia/   301
-/patagonia/familias  /patagonia/   301
+/familias            /patagonia-2026/   301
+/patagonia/familias  /patagonia-2026/   301
+/patagonia           /patagonia-2026/   301
+/corrientes          /corrientes-2025/  301

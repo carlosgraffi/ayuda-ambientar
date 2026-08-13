@@ -3,6 +3,7 @@ import { ArrowRight, Droplet, Flame, Wind } from "lucide-react";
 import { brand } from "@/lib/brand";
 import {
   enCurso,
+  estaCerrada,
   sortedTenants,
   type DisasterType,
   type Tenant,
@@ -51,7 +52,7 @@ function TarjetaInstancia({ t }: { t: Tenant }) {
           {/* El año adelante: una colecta de 2025 y una de ahora no
               pueden verse igual. */}
           <p className="eyebrow" style={{ color: "var(--text-faint)" }}>
-            {t.year} · {ESTADO[t.emergencyStatus]}
+            {t.year} · {estaCerrada(t) ? "Campaña cerrada" : ESTADO[t.emergencyStatus]}
           </p>
           <div className="mt-1.5 flex items-start gap-3">
             <Icono
@@ -65,6 +66,9 @@ function TarjetaInstancia({ t }: { t: Tenant }) {
         </div>
         {enCurso(t) && (
           <span className="badge badge-accent shrink-0">En curso</span>
+        )}
+        {estaCerrada(t) && (
+          <span className="badge badge-outline shrink-0">Cerrada</span>
         )}
       </div>
 
@@ -81,8 +85,13 @@ function TarjetaInstancia({ t }: { t: Tenant }) {
         {t.lead}
       </p>
 
-      <a href={instancePath(t)} className="btn btn-primary btn-md self-start">
-        Ver cómo ayudar
+      <a
+        href={instancePath(t)}
+        className={`btn btn-md self-start ${
+          estaCerrada(t) ? "btn-secondary" : "btn-primary"
+        }`}
+      >
+        {estaCerrada(t) ? "Ver el resumen" : "Ver cómo ayudar"}
         <ArrowRight size={17} strokeWidth={1.75} aria-hidden />
       </a>
     </li>
@@ -121,7 +130,8 @@ function Grupo({
 export default function Page() {
   const instancias = sortedTenants();
   const activas = instancias.filter(enCurso);
-  const pasadas = instancias.filter((t) => !enCurso(t));
+  const abiertas = instancias.filter((t) => !enCurso(t) && !estaCerrada(t));
+  const cerradas = instancias.filter(estaCerrada);
 
   return (
     <>
@@ -140,9 +150,14 @@ export default function Page() {
           <div className="container section-tight">
             <Grupo titulo="Ocurriendo ahora" instancias={activas} />
             <Grupo
-              titulo={activas.length ? "Emergencias anteriores" : "Emergencias relevadas"}
+              titulo="Abiertas"
               nota="La emergencia pasó, pero la reconstrucción sigue: estas organizaciones continúan recibiendo aportes."
-              instancias={pasadas}
+              instancias={abiertas}
+            />
+            <Grupo
+              titulo="Campañas cerradas"
+              nota="Quedan publicadas como registro. Ya no verificamos que esas cuentas sigan activas, así que no invitan a transferir."
+              instancias={cerradas}
             />
           </div>
         </section>

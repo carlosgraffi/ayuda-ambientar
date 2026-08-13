@@ -1,6 +1,12 @@
 import Image from "next/image";
 import { brand } from "@/lib/brand";
-import { REGION_BBOX, SITUATION_HEADING, type Tenant } from "@/lib/tenants";
+import {
+  REGION_BBOX,
+  SITUATION_HEADING,
+  edicionVigente,
+  estaCerrada,
+  type Tenant,
+} from "@/lib/tenants";
 import { fullDate, relativeTime } from "@/lib/format";
 import { TopBar } from "./TopBar";
 import { HotspotList } from "./HotspotList";
@@ -8,6 +14,8 @@ import { OrgList } from "./OrgList";
 import { CampaignList } from "./CampaignList";
 import { Disclaimer } from "./Disclaimer";
 import { FiresMapPanel } from "./FiresMapPanel";
+import { ClosedNotice } from "./ClosedNotice";
+import { CampaignResultsPanel } from "./CampaignResultsPanel";
 
 /**
  * La página de una instancia. La misma para todas: lo que cambia son los
@@ -40,6 +48,9 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
     shortName,
   } = tenant;
 
+  const cerrada = estaCerrada(tenant);
+  const vigente = cerrada ? edicionVigente(tenant.campaign) : undefined;
+
   return (
     // El tipo de desastre vive acá y no en <html>: es lo que permite que
     // un mismo deploy sirva una instancia de fuego y una de agua.
@@ -47,6 +58,12 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
       <TopBar lastReviewed={lastReviewed} />
 
       <main id="contenido">
+        {cerrada && (
+          <div className="container" style={{ paddingTop: "var(--sp-6)" }}>
+            <ClosedNotice tenant={tenant} vigente={vigente} />
+          </div>
+        )}
+
         <section className="container" style={{ paddingTop: "var(--sp-6)" }}>
           {hero ? (
             /* Cuando hay foto, la página se compromete con ella: degradado
@@ -106,9 +123,17 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
             </p>
           </div>
 
-          <div className={hotspots.length ? "mb-10" : ""}>
-            <FiresMapPanel slug={tenant.slug} bbox={REGION_BBOX[tenant.slug]} />
-          </div>
+          {/* Un mapa de focos ACTIVOS en una campaña cerrada mostraría el
+              fuego de hoy junto a datos de otro año: dos cosas distintas
+              con la misma pinta. */}
+          {!cerrada && (
+            <div className={hotspots.length ? "mb-10" : ""}>
+              <FiresMapPanel
+                slug={tenant.campaign}
+                bbox={REGION_BBOX[tenant.campaign]}
+              />
+            </div>
+          )}
 
           {hotspots.length > 0 && <HotspotList hotspots={hotspots} />}
         </section>
@@ -128,7 +153,7 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
               <Disclaimer />
             </div>
 
-            <OrgList organizations={organizations} />
+            <OrgList organizations={organizations} closed={cerrada} />
           </div>
         </section>
 
@@ -145,6 +170,8 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
             <CampaignList campaigns={campaigns} />
           </section>
         )}
+
+        {cerrada && <CampaignResultsPanel tenant={tenant} />}
 
         <footer className="section-subtle">
           <div

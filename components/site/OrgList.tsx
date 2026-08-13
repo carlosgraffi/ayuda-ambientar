@@ -26,7 +26,13 @@ const TYPE_ORDER: OrgType[] = [
   "comunidad",
 ];
 
-export function OrgList({ organizations }: { organizations: Organization[] }) {
+export function OrgList({
+  organizations,
+  closed = false,
+}: {
+  organizations: Organization[];
+  closed?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("todas");
   const [toast, setToast] = useState<string | null>(null);
@@ -182,7 +188,12 @@ export function OrgList({ organizations }: { organizations: Organization[] }) {
         <div className="mt-6 grid grid-cols-1 items-start gap-4 md:grid-cols-2">
           {visible.map((org) => (
             <div key={org.slug} id={`org-${org.slug}`} style={{ scrollMarginTop: 88 }}>
-              <OrgCard org={org} onShare={share} onCopied={setToast} />
+              <OrgCard
+                org={org}
+                closed={closed}
+                onShare={share}
+                onCopied={setToast}
+              />
             </div>
           ))}
         </div>
