@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
-import { brand, instance, siteUrl } from "@/lib/brand";
+import { brand } from "@/lib/brand";
 import "./globals.css";
 
 /**
@@ -14,35 +14,27 @@ const bricolage = Bricolage_Grotesque({
   axes: ["opsz"],
 });
 
-const title = `¿Cómo ayudar a las personas afectadas por los incendios en la Patagonia?`;
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(brand.url),
   title: {
-    default: title,
-    template: `%s · ${instance.name}`,
+    default: `${brand.name} · ¿Cómo ayudar ante una catástrofe?`,
+    template: `%s · ${brand.name}`,
   },
   description: brand.description,
-  openGraph: {
-    title,
-    description: brand.description,
-    locale: "es_AR",
-    type: "website",
-    siteName: instance.name,
-  },
+  openGraph: { locale: "es_AR", type: "website", siteName: brand.name },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
 };
 
 /**
  * Corre antes del primer paint para no mostrar el tema equivocado por un
- * instante. Fija también `data-disaster`, que es lo que selecciona la
- * paleta funcional del tipo de emergencia.
+ * instante. El tipo de desastre NO se fija acá: lo pone cada instancia en
+ * su propio contenedor, que es lo que permite que un mismo deploy sirva
+ * una instancia de fuego y una de agua.
  */
 const themeInit = `
 (function(){
   var el = document.documentElement;
-  el.setAttribute('data-disaster', ${JSON.stringify(instance.disasterType)});
   try {
     var saved = localStorage.getItem('theme');
     var dark = saved ? saved === 'dark'

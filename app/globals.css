@@ -196,15 +196,15 @@ html[data-theme="dark"] {
   --accent-soft: rgba(151, 165, 156, 0.16);
   --sin-senal-soft: rgba(151, 165, 156, 0.14);
 }
-html[data-theme="dark"][data-disaster="fuego"] {
+html[data-theme="dark"] [data-disaster="fuego"] {
   --accent-soft: rgba(249, 115, 22, 0.18);
   --accent-ink: #fdba74;
 }
-html[data-theme="dark"][data-disaster="agua"] {
+html[data-theme="dark"] [data-disaster="agua"] {
   --accent-soft: rgba(59, 130, 246, 0.18);
   --accent-ink: #93c5fd;
 }
-html[data-theme="dark"][data-disaster="viento"] {
+html[data-theme="dark"] [data-disaster="viento"] {
   --accent-soft: rgba(100, 116, 139, 0.2);
   --accent-ink: #cbd5e1;
 }

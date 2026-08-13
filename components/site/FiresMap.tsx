@@ -47,12 +47,12 @@ interface Datos {
   windowDays: number;
 }
 
-function useFocos() {
+function useFocos(slug: string) {
   const [datos, setDatos] = useState<Datos | null>(null);
 
   useEffect(() => {
     let vivo = true;
-    fetch("/data/focos.geojson")
+    fetch(`/data/focos-${slug}.geojson`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((doc) => {
         if (!vivo) return;
@@ -88,7 +88,7 @@ function useFocos() {
     return () => {
       vivo = false;
     };
-  }, []);
+  }, [slug]);
 
   return datos;
 }
@@ -99,8 +99,8 @@ const TILES = {
   dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
 };
 
-export function FiresMap() {
-  const datos = useFocos();
+export function FiresMap({ slug, center }: { slug: string; center: [number, number] }) {
+  const datos = useFocos(slug);
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<LeafletMap | null>(null);
 
@@ -113,7 +113,7 @@ export function FiresMap() {
       if (cancelado || !contenedor.current) return;
 
       const map = L.map(contenedor.current, {
-        center: [-42.2, -71.3],
+        center,
         zoom: 6,
         scrollWheelZoom: false, // no secuestrar el scroll de la página
         attributionControl: true,
@@ -176,7 +176,7 @@ export function FiresMap() {
       mapa.current?.remove();
       mapa.current = null;
     };
-  }, [datos]);
+  }, [datos, center]);
 
   if (!datos) {
     return (
@@ -205,7 +205,7 @@ export function FiresMap() {
         <p className="eyebrow">Sin señal</p>
         <p style={{ color: "var(--text-body)" }}>
           {datos.status === "sin-detecciones"
-            ? `${datos.source.name} no reporta focos en la Patagonia andina en los últimos ${datos.windowDays} días.`
+            ? `${datos.source.name} no reporta focos de calor en la zona en los últimos ${datos.windowDays} días.`
             : "No hay datos de focos activos en este momento."}
         </p>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -231,7 +231,7 @@ export function FiresMap() {
           zIndex: 0,
         }}
         role="img"
-        aria-label={`Mapa con ${datos.focos.length} focos de calor detectados en la Patagonia andina en los últimos ${datos.windowDays} días`}
+        aria-label={`Mapa con ${datos.focos.length} focos de calor detectados en los últimos ${datos.windowDays} días`}
       />
       <figcaption
         className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm"

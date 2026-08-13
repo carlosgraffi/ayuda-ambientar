@@ -13,12 +13,14 @@ import { ThemeToggle } from "./ThemeToggle";
  *
  * La fecha es relativa y derivada del contenido, no escrita a mano.
  */
-export function TopBar({ lastReviewed }: { lastReviewed: string }) {
+export function TopBar({ lastReviewed }: { lastReviewed?: string }) {
   return (
     <header className="glass sticky top-0 z-50">
       <div className="container flex h-16 items-center justify-between gap-4">
-        {/* El producto lleva el peso, el laboratorio el respaldo. */}
-        <a href="#contenido" className="brand brand-md">
+        {/* El producto lleva el peso, el laboratorio el respaldo.
+            En una instancia el logotipo vuelve a la portada de la
+            plataforma; en la portada misma es un ancla al contenido. */}
+        <a href="/" className="brand brand-md">
           <Flame
             size={20}
             strokeWidth={1.75}
@@ -32,15 +34,17 @@ export function TopBar({ lastReviewed }: { lastReviewed: string }) {
         </a>
 
         <div className="flex items-center gap-3">
-          <p
-            className="hidden text-right text-xs sm:block"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Revisado{" "}
-            <time dateTime={lastReviewed} title={fullDate(lastReviewed)}>
-              {relativeTime(lastReviewed)}
-            </time>
-          </p>
+          {lastReviewed && (
+            <p
+              className="hidden text-right text-xs sm:block"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Revisado{" "}
+              <time dateTime={lastReviewed} title={fullDate(lastReviewed)}>
+                {relativeTime(lastReviewed)}
+              </time>
+            </p>
+          )}
           <ThemeToggle />
         </div>
       </div>

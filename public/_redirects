@@ -1,0 +1,7 @@
+# Rutas del sitio viejo que siguen circulando. Aplican en cualquier
+# dominio; el dominio propio además se resuelve en functions/_middleware.ts.
+#
+# /familias servía un registro de ejemplo con teléfono y alias inventados.
+# Se retiró; el enlace no se rompe, lleva a la instancia.
+/familias            /patagonia/   301
+/patagonia/familias  /patagonia/   301

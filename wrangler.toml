@@ -1,0 +1,12 @@
+# Cloudflare Pages, para deploys por CLI.
+#   npm run deploy      → build + `wrangler pages deploy` (toma out/)
+#   npm run cf:preview  → sirve el build localmente con wrangler
+#
+# Primera vez: `npx wrangler login` (o CLOUDFLARE_API_TOKEN en el entorno).
+# El primer deploy crea el proyecto de Pages con este nombre.
+#
+# `functions/` se compila solo: resuelve la instancia en los dominios
+# propios (ver functions/_middleware.ts).
+name = "ayuda-ambientar"
+compatibility_date = "2026-08-13"
+pages_build_output_dir = "out"

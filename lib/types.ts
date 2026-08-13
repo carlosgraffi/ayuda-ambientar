@@ -99,7 +99,6 @@ export interface Organization {
   needs: OrgNeed[];
   /** Se muestra primero. En el repo viejo se llamaba `critical`. */
   urgent: boolean;
-  region: string;
 }
 
 /** Un foco o zona afectada. Reemplaza a las 7 cajas escritas en el JSX. */

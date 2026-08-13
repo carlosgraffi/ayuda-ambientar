@@ -1,6 +1,6 @@
 /**
  * Trae los focos activos de NASA FIRMS y los deja como GeoJSON estático en
- * `public/data/focos.geojson`. Corre en el build (`prebuild`).
+ * `public/data/focos-<instancia>.geojson`. Corre en el build (`prebuild`).
  *
  * Por qué en el build y no por request:
  * · El sitio es un export estático servido desde CDN. Un pico de tráfico
@@ -18,13 +18,18 @@
  * si devuelve basura, escribe una colección vacía marcada `sin-senal` y el
  * mapa muestra ese estado, que es información y no un hueco.
  */
-import { writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-const OUT = "public/data/focos.geojson";
+/**
+ * Un recuadro por instancia. La lista vive en `content/regions.json`, que
+ * también lee `lib/tenants.ts`: una sola fuente de verdad, en el único
+ * formato que Node y TypeScript pueden leer sin herramientas de por medio.
+ */
+const REGIONS = JSON.parse(await readFile("content/regions.json", "utf8"));
 
-/** Patagonia andina: Neuquén, Río Negro y Chubut. Oeste,Sur,Este,Norte. */
-const BBOX = "-74,-47,-66,-38";
+const out = (slug) => `public/data/focos-${slug}.geojson`;
+
 const SOURCE = "VIIRS_SNPP_NRT";
 const DAYS = 3;
 
@@ -33,6 +38,14 @@ const MIN_CONFIDENCE = "n"; // n = nominal, h = high; se descarta 'l' (low)
 
 async function main() {
   const key = process.env.FIRMS_API_KEY;
+  for (const [slug, bbox] of Object.entries(REGIONS)) {
+    await fetchRegion(slug, bbox.join(","), key);
+  }
+}
+
+async function fetchRegion(slug, BBOX, key) {
+  const write = (doc) => writeDoc(slug, BBOX, doc);
+
   if (!key) {
     return write({
       status: "sin-senal",
@@ -97,7 +110,7 @@ async function main() {
   });
 }
 
-async function write({ status, features = [], reason }) {
+async function writeDoc(slug, BBOX, { status, features = [], reason }) {
   const doc = {
     type: "FeatureCollection",
     features,
@@ -116,10 +129,11 @@ async function write({ status, features = [], reason }) {
       bbox: BBOX.split(",").map(Number),
     },
   };
-  await mkdir(dirname(OUT), { recursive: true });
-  await writeFile(OUT, JSON.stringify(doc));
+  const path = out(slug);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, JSON.stringify(doc));
   const detail = reason ? ` — ${reason}` : ` — ${features.length} focos`;
-  console.log(`focos.geojson: ${status}${detail}`);
+  console.log(`${path}: ${status}${detail}`);
 }
 
 await main();

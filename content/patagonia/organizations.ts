@@ -45,7 +45,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "amigos-de-la-patagonia",
@@ -65,7 +64,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "brigada-andina",
@@ -85,7 +83,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "brigada-forestal-mallin-ahogado",
@@ -105,7 +102,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "huerta-amarantus",
@@ -124,7 +120,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "cic",
@@ -143,7 +138,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }, { kind: "insumos" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "mercado-comunitario-paraje-entre-rios",
@@ -159,7 +153,6 @@ export const organizations: Organization[] = [
       { kind: "insumos", detail: "Acopio de productos" },
     ],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "vecinal-paraje-entre-rios-1",
@@ -181,7 +174,6 @@ export const organizations: Organization[] = [
       { kind: "insumos", detail: "Acopio de productos" },
     ],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "vecinal-paraje-entre-rios-2",
@@ -203,7 +195,6 @@ export const organizations: Organization[] = [
       { kind: "insumos", detail: "Acopio de productos" },
     ],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "agrupacion-rojinegra",
@@ -216,7 +207,6 @@ export const organizations: Organization[] = [
     links: [],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "brigada-cuchara-y-barro",
@@ -235,7 +225,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "centro-cultural-galeano",
@@ -254,7 +243,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "cooperadora-ifdc-el-bolson",
@@ -279,7 +267,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "bomberos-el-bolson",
@@ -300,7 +287,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "bomberos-epuyen",
@@ -320,7 +306,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "bomberos-lago-puelo",
@@ -340,7 +325,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "brigada-azul-zafiro",
@@ -359,7 +343,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "universidad-nacional-rio-negro",
@@ -379,7 +362,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "lihuen-cultural",
@@ -404,7 +386,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "centro-cultural-antu-quillen",
@@ -424,7 +405,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "la-casa-de-tokiko",
@@ -445,7 +425,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: false,
-    region: "patagonia",
   },
   {
     slug: "brigada-costa-azul",
@@ -470,7 +449,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "fundacion-bomberos-argentina",
@@ -490,7 +468,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "bomberos-melipal",
@@ -510,7 +487,6 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
   },
   {
     slug: "colecta-eliana-ferraris",
@@ -531,67 +507,5 @@ export const organizations: Organization[] = [
     ],
     needs: [{ kind: "dinero" }],
     urgent: true,
-    region: "patagonia",
-  },
-
-  /* ── Corrientes ─────────────────────────────────────────────────── */
-  {
-    slug: "corrientes-contra-el-cambio-climatico",
-    name: "Corrientes contra el Cambio Climático",
-    type: "comunidad",
-    description:
-      "Asociación sin fines de lucro para la lucha contra el cambio climático. Comunican el uso de las donaciones en su Instagram.",
-    holderName: "Guido Paparella",
-    holderStatus: "declarado",
-    channels: [{ rail: "alias_ar", identifier: "correntinosclim.mp" }],
-    links: [
-      {
-        kind: "instagram",
-        handle: "@correntinosclim",
-        url: "https://instagram.com/correntinosclim",
-      },
-    ],
-    needs: [{ kind: "dinero" }],
-    urgent: true,
-    region: "corrientes",
-  },
-  {
-    slug: "bomberos-saladas",
-    name: "Bomberos Voluntarios de Saladas",
-    type: "bomberos",
-    description: "Cuenta oficial de los Bomberos Voluntarios de Saladas.",
-    holderName: "Asociación de Bomberos Voluntarios de Saladas",
-    holderStatus: "declarado",
-    channels: [{ rail: "alias_ar", identifier: "bomberos.saladas" }],
-    links: [
-      {
-        kind: "instagram",
-        handle: "@bomberosvoluntariossaladas",
-        url: "https://instagram.com/bomberosvoluntariossaladas",
-      },
-    ],
-    needs: [{ kind: "dinero" }],
-    urgent: false,
-    region: "corrientes",
-  },
-  {
-    slug: "bomberos-corrientes-capital",
-    name: "Bomberos Voluntarios de Corrientes Capital",
-    type: "bomberos",
-    description:
-      "Cuenta oficial de los Bomberos Voluntarios de Corrientes Capital.",
-    holderName: "Asoc. Bomberos Voluntarios de Capital",
-    holderStatus: "declarado",
-    channels: [{ rail: "alias_ar", identifier: "granja.pluma.orilla" }],
-    links: [
-      {
-        kind: "instagram",
-        handle: "@bomberosvoluntariosctescap",
-        url: "https://instagram.com/bomberosvoluntariosctescap",
-      },
-    ],
-    needs: [{ kind: "dinero" }],
-    urgent: false,
-    region: "corrientes",
-  },
+  }
 ];

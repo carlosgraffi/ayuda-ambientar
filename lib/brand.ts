@@ -47,29 +47,3 @@ export const brand = {
     labUrl: "https://ambient.ar",
   },
 } as const;
-
-/**
- * Instancia servida en F1. En F2 esto sale de la resolución por hostname
- * o por el primer segmento del path; hasta entonces, una constante.
- */
-export const instance = {
-  slug: "patagonia",
-  name: "Incendios en la Patagonia",
-  shortName: "Patagonia",
-  /** Selecciona la paleta funcional vía `data-disaster`. Ver globals.css. */
-  disasterType: "fuego" as const,
-  countryCode: "AR",
-  /** activa | contencion | recuperacion | latente */
-  emergencyStatus: "recuperacion" as const,
-
-  /**
-   * El dominio propio de esta instancia. Sigue siendo el canónico para
-   * buscadores: es donde está el posicionamiento acumulado y los enlaces
-   * que ya circulan. `ayuda.ambient.ar/patagonia` sirve el mismo
-   * contenido y apunta acá.
-   */
-  host: "ayudapatagonia.ar",
-  path: "/patagonia",
-} as const;
-
-export const siteUrl = `https://${instance.host}`;
