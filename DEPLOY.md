@@ -123,6 +123,69 @@ convierte un problema nuestro en un dato sobre las organizaciones.
 El flujo desde el panel — cerrar una campaña y generar el resumen sin
 tocar código — es parte de F4.
 
+## 7 · Supabase
+
+El contenido vive en Supabase; `content/` queda como respaldo versionado.
+**El build nunca depende de la base**: sin credenciales, o si no responde,
+usa el contenido local y lo dice en el log. Esa es la forma definitiva, no
+un puente — en una emergencia no se puede depender de un tercero para
+poder publicar.
+
+### Crear el proyecto
+
+1. En <https://supabase.com/dashboard>, **New project**. Región: São Paulo
+   (la más cercana). Guardá la contraseña de la base.
+2. Conectá el repo y aplicá el esquema:
+
+```bash
+npx supabase link --project-ref <tu-ref>
+```
+
+```bash
+npx supabase db push
+```
+
+3. Sembrá el contenido actual:
+
+```bash
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run seed
+```
+
+Es idempotente: se puede correr las veces que haga falta.
+
+### Las tres claves, y cuál va dónde
+
+| Clave | Dónde | Por qué |
+| --- | --- | --- |
+| `SUPABASE_URL` | Build y Function | Pública. |
+| `SUPABASE_ANON_KEY` | Build | Sólo lee, y RLS decide qué. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Sólo** la Function y el seed | **Saltea RLS.** Si llega al navegador, cualquiera puede escribir en la base. |
+
+En Cloudflare van en **Settings → Variables and Secrets**, la de servicio
+como *Secret*. Nunca en el repo ni en un archivo que se despliegue.
+
+### Por qué esto arregla lo de Firestore
+
+Las reglas de Firestore permitían **escribir desde el navegador**: la app
+vieja incrementaba los contadores desde el cliente, así que cualquiera
+podía inflar un número desde la consola. Acá el navegador nunca toca la
+base: manda un `POST` a `/api/track` y la Function inserta con la clave de
+servicio, que vive en el Worker.
+
+Las pruebas de `supabase/tests/rls.sql` verifican justamente eso, más el
+aislamiento entre campañas y que un borrador sin verificar no salga a la
+web. Se corren contra un stack local:
+
+```bash
+npx supabase start && npm run test:rls
+```
+
+### Firebase
+
+Una vez sembrado y desplegado, **borrá el proyecto de Firebase**. Su única
+función era el contador roto, y mientras exista sigue siendo una base
+pública escribible con el nombre del proyecto a la vista.
+
 ## Probar el enrutado por dominio antes de desplegar
 
 `npm run dev` no ejecuta las Functions. Para probarlas hace falta el build

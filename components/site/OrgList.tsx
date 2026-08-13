@@ -28,9 +28,11 @@ const TYPE_ORDER: OrgType[] = [
 
 export function OrgList({
   organizations,
+  tenantSlug,
   closed = false,
 }: {
   organizations: Organization[];
+  tenantSlug: string;
   closed?: boolean;
 }) {
   const [query, setQuery] = useState("");
@@ -190,6 +192,7 @@ export function OrgList({
             <div key={org.slug} id={`org-${org.slug}`} style={{ scrollMarginTop: 88 }}>
               <OrgCard
                 org={org}
+                tenantSlug={tenantSlug}
                 closed={closed}
                 onShare={share}
                 onCopied={setToast}

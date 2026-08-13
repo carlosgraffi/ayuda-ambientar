@@ -7,6 +7,7 @@ import type { Organization, OrgLink } from "@/lib/types";
 import { ORG_TYPE_LABEL } from "@/lib/types";
 import { getRail, primaryChannel } from "@/lib/rails";
 import { num } from "@/lib/format";
+import { track } from "@/lib/track";
 
 /**
  * La tarjeta responde tres preguntas antes de pedir plata:
@@ -51,12 +52,14 @@ function LinkButton({ link }: { link: OrgLink }) {
 
 export function OrgCard({
   org,
+  tenantSlug,
   transfers,
   closed = false,
   onShare,
   onCopied,
 }: {
   org: Organization;
+  tenantSlug: string;
   /**
    * Campaña cerrada: la tarjeta deja de ofrecer copiar y transferir.
    * El dato queda visible como registro, pero dejar los botones sería
@@ -85,6 +88,7 @@ export function OrgCard({
   async function copyAlias() {
     try {
       await navigator.clipboard.writeText(channel!.identifier);
+      track(tenantSlug, "copiar_alias", org.slug);
       setCopied(true);
       onCopied("Alias copiado");
       setTimeout(() => setCopied(false), 2000);
@@ -194,6 +198,7 @@ export function OrgCard({
             target="_blank"
             rel="noopener noreferrer"
             className={`btn ${deeplink.brandClass} btn-lg grow`}
+            onClick={() => track(tenantSlug, "abrir_transferencia", org.slug)}
           >
             <span className="text-base">{deeplink.label}</span>
             {deeplink.brandLogo && (
@@ -209,7 +214,10 @@ export function OrgCard({
         )}
         <button
           type="button"
-          onClick={() => onShare(org)}
+          onClick={() => {
+            track(tenantSlug, "compartir", org.slug);
+            onShare(org);
+          }}
           className="btn btn-secondary btn-icon btn-lg shrink-0"
           aria-label={`Compartir ${org.name}`}
         >

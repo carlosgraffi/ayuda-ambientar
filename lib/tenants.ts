@@ -123,8 +123,13 @@ export const TENANTS: Tenant[] = [
     hosts: ["ayudapatagonia.ar", "www.ayudapatagonia.ar"],
     hero: { src: "/portada.jpg", width: 1200, height: 400 },
     lastReviewed: revPatagonia,
-    // Hoy lista las mismas organizaciones que 2025: es la misma red, y no
-    // se inventa un relevamiento nuevo que no se hizo.
+    closedAt: "2026-08-01T00:00:00-03:00",
+    results: {
+      notMeasured:
+        "Esta campaña todavía no tuvo medición de tráfico. Las próximas se miden desde el primer día.",
+    },
+    // Lista las mismas organizaciones que 2025: es la misma red, y no se
+    // inventa un relevamiento nuevo que no se hizo.
     organizations: orgsPatagonia,
     hotspots: [],
     campaigns: campPatagonia,
@@ -224,8 +229,8 @@ export function edicionesAnteriores(t: Tenant): Tenant[] {
  * Para la portada: primero lo que está ocurriendo, después lo abierto, y
  * al final lo cerrado. Dentro de cada grupo, lo más reciente arriba.
  */
-export function sortedTenants(): Tenant[] {
-  return [...TENANTS].sort(
+export function ordenar(instancias: Tenant[]): Tenant[] {
+  return [...instancias].sort(
     (a, b) =>
       Number(enCurso(b)) - Number(enCurso(a)) ||
       Number(estaCerrada(a)) - Number(estaCerrada(b)) ||

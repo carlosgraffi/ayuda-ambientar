@@ -1,12 +1,12 @@
 import { ImageResponse } from "next/og";
 import { brand } from "@/lib/brand";
-import { TENANTS, getTenant } from "@/lib/tenants";
+import { getTenant, getTenants } from "@/lib/content";
 
 /** Requerido por `output: export`: se genera en el build, no por request. */
 export const dynamic = "force-static";
 
-export function generateStaticParams() {
-  return TENANTS.map((t) => ({ tenant: t.slug }));
+export async function generateStaticParams() {
+  return (await getTenants()).map((t) => ({ tenant: t.slug }));
 }
 
 export const size = { width: 1200, height: 630 };
@@ -26,7 +26,7 @@ export default async function Image({
 }: {
   params: Promise<{ tenant: string }>;
 }) {
-  const tenant = getTenant((await params).tenant);
+  const tenant = await getTenant((await params).tenant);
   const titulo = tenant
     ? tenant.headline.replace(/\*\*/g, "")
     : "¿Cómo ayudar ante una catástrofe?";

@@ -9,10 +9,13 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed-supabase.ts",
+    "test:rls": "docker exec -i supabase_db_ayudapatagonia psql -U postgres -d postgres -v ON_ERROR_STOP=1 -q < supabase/tests/rls.sql",
     "deploy": "next build && wrangler pages deploy",
     "cf:preview": "next build && wrangler pages dev out"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.544.0",
     "next": "^15.5.20",
@@ -26,7 +29,9 @@
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
+    "supabase": "^2.114.0",
     "tailwindcss": "^4.3.2",
+    "tsx": "^4.23.12",
     "typescript": "5.7.3",
     "wrangler": "^4.108.0"
   }

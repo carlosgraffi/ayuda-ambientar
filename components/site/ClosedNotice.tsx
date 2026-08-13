@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { fullDate } from "@/lib/format";
+import { brand } from "@/lib/brand";
 import type { Tenant } from "@/lib/tenants";
 import { instancePath } from "@/lib/urls";
 
@@ -42,12 +43,19 @@ export function ClosedNotice({
         <strong>ya no verificamos que estas cuentas sigan activas</strong>, así
         que no conviene transferir desde acá.
       </p>
-      {vigente && (
+      {/* Nunca un callejón sin salida: si no hay edición vigente de este
+          territorio, al menos la portada dice qué hay abierto en otros. */}
+      {vigente ? (
         <a
           href={instancePath(vigente)}
           className="btn btn-primary btn-md self-start"
         >
           Ir a la campaña {vigente.year}
+          <ArrowRight size={17} strokeWidth={1.75} aria-hidden />
+        </a>
+      ) : (
+        <a href="/" className="btn btn-secondary btn-md self-start">
+          Ver qué campañas están abiertas en {brand.name}
           <ArrowRight size={17} strokeWidth={1.75} aria-hidden />
         </a>
       )}

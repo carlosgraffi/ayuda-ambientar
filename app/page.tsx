@@ -4,10 +4,11 @@ import { brand } from "@/lib/brand";
 import {
   enCurso,
   estaCerrada,
-  sortedTenants,
+  ordenar,
   type DisasterType,
   type Tenant,
 } from "@/lib/tenants";
+import { getTenants } from "@/lib/content";
 import { instancePath } from "@/lib/urls";
 import { num, relativeTime } from "@/lib/format";
 import { TopBar } from "@/components/site/TopBar";
@@ -127,8 +128,8 @@ function Grupo({
   );
 }
 
-export default function Page() {
-  const instancias = sortedTenants();
+export default async function Page() {
+  const instancias = ordenar(await getTenants());
   const activas = instancias.filter(enCurso);
   const abiertas = instancias.filter((t) => !enCurso(t) && !estaCerrada(t));
   const cerradas = instancias.filter(estaCerrada);

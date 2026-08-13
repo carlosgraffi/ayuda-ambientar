@@ -153,7 +153,11 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
               <Disclaimer />
             </div>
 
-            <OrgList organizations={organizations} closed={cerrada} />
+            <OrgList
+              organizations={organizations}
+              tenantSlug={tenant.slug}
+              closed={cerrada}
+            />
           </div>
         </section>
 

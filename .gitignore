@@ -12,4 +12,15 @@ next-env.d.ts
 reference/
 
 # Lo escribe scripts/fetch-focos.mjs en cada build, con la key del entorno.
+supabase/.temp/
 public/data/focos-*.geojson
+
+# Estado local del stack de Supabase (Docker).
+supabase/.temp/
+supabase/.branches/
+
+# Variables locales de Wrangler (claves de servicio).
+.dev.vars
+
+# Claves locales. .env.example tiene la plantilla.
+.env.local

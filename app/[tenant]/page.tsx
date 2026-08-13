@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { brand } from "@/lib/brand";
-import { TENANTS, getTenant } from "@/lib/tenants";
+import { getTenant, getTenants } from "@/lib/content";
 import { InstancePage } from "@/components/site/InstancePage";
 import { canonicalUrl } from "@/lib/urls";
 
 /** Una ruta estática por instancia. El export las emite todas en el build. */
-export function generateStaticParams() {
-  return TENANTS.map((t) => ({ tenant: t.slug }));
+export async function generateStaticParams() {
+  return (await getTenants()).map((t) => ({ tenant: t.slug }));
 }
 
 type Props = { params: Promise<{ tenant: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const tenant = getTenant((await params).tenant);
+  const tenant = await getTenant((await params).tenant);
   if (!tenant) return {};
 
   /**
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const tenant = getTenant((await params).tenant);
+  const tenant = await getTenant((await params).tenant);
   if (!tenant) notFound();
   return <InstancePage tenant={tenant} />;
 }
