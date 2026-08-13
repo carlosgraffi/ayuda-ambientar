@@ -17,6 +17,7 @@ export function TopBar({ lastReviewed }: { lastReviewed: string }) {
   return (
     <header className="glass sticky top-0 z-50">
       <div className="container flex h-16 items-center justify-between gap-4">
+        {/* El producto lleva el peso, el laboratorio el respaldo. */}
         <a href="#contenido" className="brand brand-md">
           <Flame
             size={20}
@@ -24,8 +25,10 @@ export function TopBar({ lastReviewed }: { lastReviewed: string }) {
             aria-hidden
             style={{ color: "var(--accent-600)", marginRight: 8 }}
           />
-          {brand.nameLight}
-          <b>{brand.nameBold}</b>
+          <b>{brand.productName}</b>
+          <span style={{ color: "var(--text-faint)" }}>
+            {brand.platformSuffix}
+          </span>
         </a>
 
         <div className="flex items-center gap-3">

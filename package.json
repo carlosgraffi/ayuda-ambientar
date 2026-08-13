@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-focos.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,6 +13,7 @@
     "cf:preview": "next build && wrangler pages dev out"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.544.0",
     "next": "^15.5.20",
     "react": "19.0.0",
@@ -19,6 +21,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.2",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",

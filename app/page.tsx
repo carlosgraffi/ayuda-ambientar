@@ -7,6 +7,7 @@ import { HotspotList } from "@/components/site/HotspotList";
 import { OrgList } from "@/components/site/OrgList";
 import { CampaignList } from "@/components/site/CampaignList";
 import { Disclaimer } from "@/components/site/Disclaimer";
+import { FiresMapPanel } from "@/components/site/FiresMapPanel";
 import { fullDate, relativeTime } from "@/lib/format";
 
 /**
@@ -86,6 +87,11 @@ export default function Page() {
               .
             </p>
           </div>
+
+          <div className="mb-10">
+            <FiresMapPanel />
+          </div>
+
           <HotspotList hotspots={hotspots} />
         </section>
 
@@ -128,10 +134,12 @@ export default function Page() {
             className="container flex flex-col gap-4"
             style={{ paddingBlock: "var(--sp-12)" }}
           >
-            <p className="brand brand-sm">
-              {brand.nameLight}
-              <b>{brand.nameBold}</b>
-            </p>
+            <a className="brand brand-sm" href={brand.url}>
+              <b>{brand.productName}</b>
+              <span style={{ color: "var(--text-faint)" }}>
+                {brand.platformSuffix}
+              </span>
+            </a>
             <p className="max-w-[60ch] text-sm" style={{ color: "var(--text-muted)" }}>
               {brand.description}
             </p>

@@ -10,3 +10,6 @@ next-env.d.ts
 # Clon del repo viejo (carlosgraffi/PatagoniaFires), solo para consulta.
 # Nunca se compila ni se importa desde acá.
 reference/
+
+# Lo escribe scripts/fetch-focos.mjs en cada build, con la key del entorno.
+public/data/focos.geojson
