@@ -216,6 +216,72 @@ Una vez sembrado y desplegado, **borrá el proyecto de Firebase**. Su única
 función era el contador roto, y mientras exista sigue siendo una base
 pública escribible con el nombre del proyecto a la vista.
 
+## 8 · El panel
+
+Vive en `/admin` del mismo sitio. No hay servidor aparte: el navegador
+habla directo con Supabase y **las políticas de fila deciden qué puede
+hacer cada quien**. Por eso una instancia nueva no necesita infraestructura
+extra — se despliega el sitio y el panel viene adentro.
+
+Que la clave anónima sea pública no es un descuido: sin sesión no se ve
+nada privado, y con sesión sólo se ve y edita aquello donde hay membresía.
+Está probado en `npm run test:rls`.
+
+### Dar de alta a alguien
+
+1. Supabase → **Authentication → Users → Add user**, con su correo.
+2. Crear la membresía (SQL Editor), eligiendo `rol`: `admin`, `editor` o
+   `lector`.
+
+```sql
+insert into memberships (user_id, tenant_id, role)
+select u.id, t.id, 'editor'
+from auth.users u, tenants t
+where u.email = 'persona@ejemplo.org' and t.slug = 'patagonia-2026';
+```
+
+Sin membresía la persona entra pero no ve ninguna campaña, y el panel se
+lo dice.
+
+El ingreso es por enlace de un solo uso al correo: no hay contraseña que
+compartir por WhatsApp, que es como se filtra el acceso en un equipo que
+se arma en medio de una emergencia. Para que los correos salgan de verdad
+hay que configurar SMTP en Supabase → Authentication → Emails; con el
+servidor por defecto sólo llegan a direcciones del propio equipo y con
+límite diario.
+
+### Publicar los cambios
+
+Guardar escribe en la base al instante, **pero el sitio público se
+reconstruye aparte**: el contenido se lee en el build. El botón *Publicar
+cambios* dispara ese rebuild.
+
+Para que funcione hace falta el hook:
+
+1. Cloudflare → **Settings → Builds → Deploy hooks → Add deploy hook**,
+   rama `main`. Copiá la URL.
+2. Guardala como **Secret** con el nombre `CF_DEPLOY_HOOK_URL`.
+
+Sin eso el botón avisa que falta configurarlo, en vez de fallar en
+silencio. El hook vive del lado del servidor a propósito: es una URL que
+dispara builds y en el navegador cualquiera podría gastarlos.
+
+### Verificaciones
+
+No se puede pasar una organización a *Verificada* sin registrar cómo se
+chequeó. Si el sitio afirma que una cuenta es de quien dice ser y hay un
+fraude, tiene que constar quién lo verificó, cuándo y con qué.
+
+Toda verificación **vence**. La lista ordena primero lo que no está
+publicado y lo que tiene la verificación vencida, porque es lo que alguien
+tiene que mirar; el alfabeto se ve más prolijo y esconde justo eso.
+
+> Las 28 organizaciones sembradas quedaron como `verificada` porque el
+> sitio viejo ya las publicaba, pero **ninguna tiene una verificación
+> registrada detrás**. El panel las marca a todas como vencidas. No es un
+> error: es el estado real, y hasta que alguien las chequee una por una el
+> sitio está afirmando algo que nadie sostuvo.
+
 ## Probar el enrutado por dominio antes de desplegar
 
 `npm run dev` no ejecuta las Functions. Para probarlas hace falta el build

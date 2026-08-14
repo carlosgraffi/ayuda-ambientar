@@ -24,3 +24,6 @@ supabase/.branches/
 
 # Claves locales. .env.example tiene la plantilla.
 .env.local
+
+# Lo escribe scripts/write-public-config.mjs en cada build.
+public/config.json

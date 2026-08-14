@@ -68,7 +68,8 @@ npx supabase start && npm run seed && npm run test:rls
 | `lib/rails.ts` | Medios de transferencia por país. Agregar uno es agregar un archivo. |
 | `content/` | El contenido versionado, que además es el respaldo del build. |
 | `supabase/` | Esquema, políticas de acceso y sus pruebas. |
-| `functions/` | Cloudflare: resolución de dominio propio y registro de interacciones. |
+| `components/admin/` | El panel, en `/admin`. Cliente, contra Supabase. |
+| `functions/` | Cloudflare: resolución de dominio propio, registro de interacciones y publicación. |
 | `scripts/` | Descarga de focos en el build y siembra de la base. |
 
 El sitio es estático y se sirve desde CDN: un pico de tráfico durante una

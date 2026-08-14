@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/fetch-focos.mjs",
+    "prebuild": "node scripts/fetch-focos.mjs && node scripts/write-public-config.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
