@@ -16,6 +16,7 @@ import { Disclaimer } from "./Disclaimer";
 import { FiresMapPanel } from "./FiresMapPanel";
 import { ClosedNotice } from "./ClosedNotice";
 import { CampaignResultsPanel } from "./CampaignResultsPanel";
+import { RiskPanel } from "./RiskPanel";
 
 /**
  * La página de una instancia. La misma para todas: lo que cambia son los
@@ -136,6 +137,23 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
           )}
 
           {hotspots.length > 0 && <HotspotList hotspots={hotspots} />}
+        </section>
+
+        {/* Antes del fuego. Se muestra siempre, también con la campaña
+            cerrada: el riesgo del año que viene no depende de si la
+            colecta del año pasado sigue abierta. */}
+        <section className="section-subtle">
+          <div className="container section-tight">
+            <div className="section-head">
+              <p className="eyebrow">Antes del fuego</p>
+              <h2 className="heading-2">Cómo está la zona hoy</h2>
+              <p className="lead">
+                Alertas oficiales y condiciones en {shortName}, al momento de
+                publicar esta página.
+              </p>
+            </div>
+            <RiskPanel campaign={tenant.campaign} />
+          </div>
         </section>
 
         <section className="section-subtle">

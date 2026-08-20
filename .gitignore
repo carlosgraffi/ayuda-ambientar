@@ -14,6 +14,7 @@ reference/
 # Lo escribe scripts/fetch-focos.mjs en cada build, con la key del entorno.
 supabase/.temp/
 public/data/focos-*.geojson
+public/data/riesgo-*.json
 
 # Estado local del stack de Supabase (Docker).
 supabase/.temp/

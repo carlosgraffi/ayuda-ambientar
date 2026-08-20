@@ -282,6 +282,28 @@ tiene que mirar; el alfabeto se ve más prolijo y esconde justo eso.
 > error: es el estado real, y hasta que alguien las chequee una por una el
 > sitio está afirmando algo que nadie sostuvo.
 
+## 9 · Riesgo antes del fuego
+
+La sección "Antes del fuego" de cada campaña sale de dos fuentes que se
+consultan en el build y quedan como JSON estático, igual que los focos.
+Ninguna necesita clave.
+
+| Fuente | Qué aporta | Cómo se muestra |
+| --- | --- | --- |
+| **GDACS** | Nivel de alerta oficial (verde / naranja / rojo) | **Se replica exacto**, con su color y su nombre. No se recalcula ni se rediseña: sería falsear un instrumento público. |
+| **Open-Meteo** | Temperatura, humedad, viento, lluvia | Como **condiciones**, nunca como índice. |
+
+Lo que deliberadamente **no** hace: calcular un índice de peligro propio a
+partir de esas condiciones. Calor, sequedad y viento influyen, pero un
+índice serio pesa muchas más cosas, y publicar una cuenta casera como si
+midiera algo sería inventar un instrumento.
+
+El índice oficial existe —el Fire Weather Index de Copernicus— pero su
+capa **no se puede consultar por punto**: el servidor responde
+`LayerNotDefined` a `GetFeatureInfo`. Por eso se enlaza su mapa en vez de
+estimar un número. Si en algún momento publican un endpoint de valores, el
+lugar donde entra es `scripts/fetch-riesgo.mjs`.
+
 ## Probar el enrutado por dominio antes de desplegar
 
 `npm run dev` no ejecuta las Functions. Para probarlas hace falta el build
