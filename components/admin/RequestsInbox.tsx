@@ -8,9 +8,16 @@ import { relativeTime } from "@/lib/format";
  * Solicitudes de instancia.
  *
  * Sólo la ve quien administra la plataforma: cada fila trae el nombre y el
- * correo de una persona. Las políticas ya lo garantizan —un miembro común
- * consulta y recibe cero filas— así que este componente no tiene que
- * comprobar nada: si no hay permiso, no hay datos.
+ * correo de una persona, y las políticas lo garantizan.
+ *
+ * Antes se ocultaba cuando no había filas, y eso era un error: con cero
+ * solicitudes, un superadmin veía exactamente lo mismo que cualquiera, así
+ * que no había forma de saber si el permiso había quedado bien. El silencio
+ * era indistinguible de "no tenés acceso". Ahora la sección aparece siempre
+ * para quien es superadmin, vacía si hace falta, y no aparece para el resto.
+ *
+ * Cómo se sabe: consultando `super_admins`, cuya política deja ver la fila
+ * propia y nada más. Una fila significa que sí; ninguna, que no.
  *
  * Abrir la instancia no se hace desde acá a propósito. Es un acto raro y
  * de consecuencias grandes: publica alias de transferencia con este diseño
@@ -33,6 +40,7 @@ const ESTADOS = ["pendiente", "en conversación", "abierta", "rechazada"];
 
 export function RequestsInbox({ db }: { db: SupabaseClient }) {
   const [filas, setFilas] = useState<Solicitud[] | null>(null);
+  const [esSuper, setEsSuper] = useState<boolean | null>(null);
 
   async function cargar() {
     const { data } = await db
@@ -43,7 +51,12 @@ export function RequestsInbox({ db }: { db: SupabaseClient }) {
   }
 
   useEffect(() => {
-    void cargar();
+    void (async () => {
+      const { data } = await db.from("super_admins").select("user_id").limit(1);
+      const si = Boolean(data?.length);
+      setEsSuper(si);
+      if (si) await cargar();
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -52,21 +65,39 @@ export function RequestsInbox({ db }: { db: SupabaseClient }) {
     void cargar();
   }
 
-  if (!filas?.length) return null;
+  if (esSuper !== true) return null;
 
-  const pendientes = filas.filter((f) => f.status === "pendiente").length;
+  const pendientes = (filas ?? []).filter((f) => f.status === "pendiente").length;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-baseline gap-3">
-        <h2 className="heading-3">Solicitudes de instancia</h2>
-        {pendientes > 0 && (
-          <span className="badge badge-accent">{pendientes} sin responder</span>
-        )}
+    <div
+      className="flex flex-col gap-4"
+      style={{ borderTop: "1px solid var(--border-hairline)", paddingTop: 32 }}
+    >
+      <div>
+        <p className="eyebrow">Administración de la plataforma</p>
+        <div className="mt-2 flex items-baseline gap-3">
+          <h2 className="heading-3">Solicitudes de instancia</h2>
+          {pendientes > 0 && (
+            <span className="badge badge-accent">
+              {pendientes} sin responder
+            </span>
+          )}
+        </div>
       </div>
 
+      {filas !== null && filas.length === 0 && (
+        <div className="card card-subtle">
+          <p style={{ color: "var(--text-muted)" }}>
+            Todavía no hay solicitudes. Cuando alguien pida una instancia
+            desde <a href="/solicitar-instancia/">/solicitar-instancia</a>, va
+            a aparecer acá.
+          </p>
+        </div>
+      )}
+
       <ul className="flex flex-col gap-3">
-        {filas.map((s) => (
+        {(filas ?? []).map((s) => (
           <li key={s.id} className="card flex flex-col gap-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
