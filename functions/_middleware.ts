@@ -33,6 +33,21 @@ export const onRequest: PagesFunction = async (context) => {
   // Dominio de la plataforma o preview: las rutas ya son las correctas.
   if (!slug) return context.next();
 
+  /**
+   * El panel y los endpoints existen igual en un dominio propio. Sin esta
+   * excepción caían en el 301 de abajo: `/api/track` respondía con una
+   * redirección en vez de registrar —o sea que la medición estaba rota
+   * justo en el dominio principal, ayudapatagonia.ar— y `/admin` era
+   * inalcanzable ahí.
+   */
+  if (
+    url.pathname === "/admin" ||
+    url.pathname.startsWith("/admin/") ||
+    url.pathname.startsWith("/api/")
+  ) {
+    return context.next();
+  }
+
   if (url.pathname === "/" || url.pathname === "") {
     const destino = new URL(`/${slug}/`, url);
     return context.env.ASSETS.fetch(new Request(destino, context.request));

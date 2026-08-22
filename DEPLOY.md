@@ -250,6 +250,24 @@ hay que configurar SMTP en Supabase → Authentication → Emails; con el
 servidor por defecto sólo llegan a direcciones del propio equipo y con
 límite diario.
 
+### El enlace tiene que volver al sitio, no a localhost
+
+Supabase sólo respeta el destino que pide la aplicación si esa URL está en
+su lista blanca. Si no está, **ignora el pedido y manda al Site URL**, que
+de fábrica es `http://localhost:3000`. Por eso un enlace recién configurado
+lleva a una página que no existe.
+
+En **Supabase → Authentication → URL Configuration**:
+
+- **Site URL**: `https://ayuda.ambient.ar`
+- **Redirect URLs**, una por línea:
+  - `https://ayuda.ambient.ar/**`
+  - `https://ayudapatagonia.ar/**`
+  - `http://localhost:3000/**` (para desarrollo)
+
+Los `**` importan: sin ellos sólo se acepta la raíz exacta y el destino
+real es `/admin/`.
+
 ### Publicar los cambios
 
 Guardar escribe en la base al instante, **pero el sitio público se

@@ -47,6 +47,26 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return new Response("faltan datos", { status: 400 });
   }
 
+  /**
+   * Todo lo que sigue va dentro de un try: si Supabase no responde, esto
+   * devuelve 204 y listo. Medir es secundario, donar no — y si la base se
+   * cae en plena emergencia, cada interacción de cada persona no puede
+   * convertirse en un error.
+   */
+  try {
+    return await registrar(
+      { tenant: cuerpo.tenant, kind: cuerpo.kind, org: cuerpo.org },
+      env,
+    );
+  } catch {
+    return new Response(null, { status: 204 });
+  }
+};
+
+async function registrar(
+  cuerpo: { tenant: string; kind: string; org?: string },
+  env: Env,
+): Promise<Response> {
   const cabeceras = {
     apikey: env.SUPABASE_SERVICE_ROLE_KEY,
     Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
@@ -89,4 +109,4 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   });
 
   return new Response(null, { status: 204 });
-};
+}
