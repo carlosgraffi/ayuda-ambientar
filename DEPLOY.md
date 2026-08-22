@@ -285,6 +285,20 @@ En **Supabase → Authentication → URL Configuration**:
 Los `**` importan: sin ellos sólo se acepta la raíz exacta y el destino
 real es `/admin/`.
 
+### Redesplegar sin tocar el repositorio
+
+Tres formas, de menos a más esfuerzo:
+
+1. **El botón "Publicar cambios" del panel.** Es para lo que existe.
+2. **`npm run publicar`** — dispara el mismo hook desde la terminal.
+   Necesita `CF_DEPLOY_HOOK_URL` en `.env.local`, que no se versiona.
+3. **Cloudflare → Deployments → Retry deployment**, en el menú de la
+   última entrada. Sin configurar nada.
+
+Lo que **no** conviene usar de rutina es `npm run deploy`: construye en tu
+máquina y sube ese resultado directo, salteando git. Si tenés cambios sin
+commitear, terminan publicados sin quedar registrados en ningún lado.
+
 ### Publicar los cambios
 
 Guardar escribe en la base al instante, **pero el sitio público se
