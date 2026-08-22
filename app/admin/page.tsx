@@ -6,6 +6,7 @@ import { brand } from "@/lib/brand";
 import { getBrowserClient } from "@/lib/admin/browser";
 import { Login } from "@/components/admin/Login";
 import { CampaignPanel, type CampaignFila } from "@/components/admin/CampaignPanel";
+import { RequestsInbox } from "@/components/admin/RequestsInbox";
 
 /**
  * El panel.
@@ -143,6 +144,10 @@ export default function AdminPage() {
             ))}
           </ul>
         )}
+
+        {/* Sólo aparece si hay filas, y sólo hay filas para quien
+            administra la plataforma: lo decide la base, no esta pantalla. */}
+        <RequestsInbox db={db} />
       </div>
     </Marco>
   );

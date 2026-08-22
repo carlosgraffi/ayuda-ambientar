@@ -38,10 +38,7 @@ const OPCIONES = [
     titulo: "Pedí una instancia",
     texto:
       "Si estás organizando la respuesta a una catástrofe en otro lugar, abrimos una instancia con tus organizaciones. El código es abierto y también podés desplegarlo por tu cuenta.",
-    accion: {
-      texto: "Solicitar una instancia",
-      href: `mailto:${brand.contactEmail}?subject=Solicitar una instancia`,
-    },
+    accion: { texto: "Solicitar una instancia", href: "/solicitar-instancia/" },
   },
 ];
 

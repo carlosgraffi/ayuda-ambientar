@@ -83,9 +83,13 @@ El despliegue, el alta de una campaña y su cierre están en
 ## Abrir una instancia propia
 
 Si estás organizando la respuesta a una catástrofe y te sirve una
-instancia, escribinos a carlos@redisen.ar. También podés forkear: el
-código es abierto y las decisiones están explicadas en los comentarios,
-que están en castellano a propósito.
+instancia, pedila en [/solicitar-instancia](https://ayuda.ambient.ar/solicitar-instancia/).
+Las miramos una por una: no es burocracia, es que una instancia publica
+alias de transferencia con este diseño detrás.
+
+También podés forkear y desplegarla por tu cuenta: el código es abierto y
+las decisiones están explicadas en los comentarios, que están en
+castellano a propósito.
 
 ## Diseño
 

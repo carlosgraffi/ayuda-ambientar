@@ -194,11 +194,7 @@ export default async function Page() {
             </p>
             <p style={{ color: "var(--text-muted)" }}>
               Si estás organizando la respuesta a una catástrofe y te sirve
-              una instancia,{" "}
-              <a href={`mailto:${brand.contactEmail}?subject=Solicitar una instancia`}>
-                escribinos
-              </a>
-              .
+              una instancia, <a href="/solicitar-instancia/">te la abrimos</a>.
             </p>
           </div>
         </section>

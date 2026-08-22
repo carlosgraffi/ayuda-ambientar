@@ -184,6 +184,77 @@ begin
     format('el trigger debería pisar la fecha escrita a mano, quedó %s', quedo);
 end $$;
 
+-- ═══ 6 · Solicitudes de instancia ════════════════════════════════════
+-- Traen nombre y correo de una persona: cualquiera puede DEJAR una, nadie
+-- puede LEERLAS salvo quien administra la plataforma.
+set local role anon;
+
+do $$
+begin
+  insert into instance_requests (contact_name, contact_email, country_code,
+                                 disaster_type, description)
+  values ('Ana', 'ana@ejemplo.org', 'CO', 'fuego', 'Incendios en el Cauca.');
+exception
+  when others then raise exception 'anon SÍ debería poder dejar una solicitud: %', sqlerrm;
+end $$;
+
+do $$
+begin
+  begin
+    perform count(*) from instance_requests;
+    raise exception 'anon NO debería poder leer solicitudes';
+  exception
+    when insufficient_privilege then null;
+  end;
+end $$;
+
+reset role;
+
+-- Un miembro común tampoco: no es lo mismo administrar una campaña que
+-- administrar la plataforma.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+do $$
+declare n int;
+begin
+  select count(*) into n from instance_requests;
+  assert n = 0, format('un miembro común no debería ver solicitudes, ve %s', n);
+end $$;
+
+-- Y tampoco puede abrir instancias.
+do $$
+declare n int;
+begin
+  begin
+    insert into tenants (slug, campaign_key, year, name, short_name, headline, lead, disaster_type)
+    values ('trucha-2026','trucha',2026,'Trucha','Trucha','X','Y','fuego');
+    raise exception 'un miembro común NO debería poder abrir una instancia';
+  exception
+    when insufficient_privilege then null;
+  end;
+end $$;
+
+reset role;
+
+-- Con superadmin, sí.
+insert into super_admins (user_id) values ('11111111-1111-1111-1111-111111111111');
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+do $$
+declare n int;
+begin
+  select count(*) into n from instance_requests;
+  assert n >= 1, 'un superadmin sí debería ver las solicitudes';
+
+  insert into tenants (slug, campaign_key, year, name, short_name, headline, lead, disaster_type)
+  values ('cauca-2026','cauca',2026,'Incendios en el Cauca','Cauca','X','Y','fuego');
+end $$;
+
+reset role;
+
 select 'Todas las pruebas de RLS pasaron' as resultado;
 
 rollback;

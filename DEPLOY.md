@@ -304,6 +304,33 @@ capa **no se puede consultar por punto**: el servidor responde
 estimar un número. Si en algún momento publican un endpoint de valores, el
 lugar donde entra es `scripts/fetch-riesgo.mjs`.
 
+## 10 · Solicitudes de instancia
+
+`/solicitar-instancia` es público y escribe en `instance_requests` con la
+clave anónima. Las políticas permiten **insertar sin autenticar y no
+permiten leer**: cualquiera puede dejar una solicitud, nadie puede ver las
+de los demás, que traen nombre y correo de personas.
+
+La bandeja aparece en `/admin`, sólo para quien administra la plataforma.
+Para darte ese permiso:
+
+```sql
+insert into super_admins (user_id)
+select id from auth.users where email = 'carlos.graffi@gmail.com';
+```
+
+### Abrir la instancia
+
+**A propósito no se hace desde el panel.** Es un acto raro y de
+consecuencias grandes: una instancia publica alias de transferencia con
+este diseño detrás, y si alguien la usa para estafar el daño no es sólo
+suyo. Se hace deliberadamente, después de hablar con quien la pidió, con
+los pasos de la sección 5.
+
+La aprobación manual no es una limitación temporal hasta automatizarla: es
+la decisión. El autoservicio abierto es superficie de fraude, y acá la
+marca **es** la confianza.
+
 ## Probar el enrutado por dominio antes de desplegar
 
 `npm run dev` no ejecuta las Functions. Para probarlas hace falta el build
