@@ -227,6 +227,23 @@ Que la clave anónima sea pública no es un descuido: sin sesión no se ve
 nada privado, y con sesión sólo se ve y edita aquello donde hay membresía.
 Está probado en `npm run test:rls`.
 
+### Entrar la primera vez, sin depender del correo
+
+En una instancia recién desplegada el correo todavía no funciona: falta
+SMTP, y Supabase arranca con `Site URL` en `localhost`, así que el enlace
+de acceso lleva a una página que no existe. Sin una segunda puerta, quien
+despliega la instancia no puede entrar a la instancia que acaba de
+desplegar.
+
+Por eso el panel también acepta contraseña. Para arrancar:
+
+1. Supabase → **Authentication → Users → Add user**, con tu correo, una
+   contraseña y **Auto Confirm User** tildado.
+2. En `/admin`, tocá **Entrar con contraseña**.
+
+No es la vía para el equipo —para eso está el enlace, que no se comparte
+por WhatsApp— sino la que permite empezar.
+
 ### Dar de alta a alguien
 
 1. Supabase → **Authentication → Users → Add user**, con su correo.
