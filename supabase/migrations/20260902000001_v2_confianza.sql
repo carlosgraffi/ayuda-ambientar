@@ -143,12 +143,11 @@ alter table organizations
 -- Las entidades son permanentes: la campaña pasa a ser opcional.
 alter table organizations alter column tenant_id drop not null;
 
--- El slug pasa a ser único GLOBAL. La unicidad por (tenant, slug) dejó de
--- servir dos veces: el perfil público vive en /e/<slug>, y con tenant_id
--- NULL el par ni siquiera restringe — en Postgres los NULL nunca chocan
--- entre sí, así que cada corrida de un seed podía duplicar entidades.
+-- La unicidad global del slug se agrega MÁS ABAJO, después de deduplicar:
+-- el seed v1 creaba la misma organización una vez por campaña (Patagonia
+-- 2025 y 2026 comparten los 25 slugs), y la constraint no puede crearse
+-- sobre esos duplicados.
 alter table organizations drop constraint organizations_tenant_id_slug_key;
-alter table organizations add constraint organizations_slug_key unique (slug);
 
 -- Las 28 organizaciones existentes fueron verificadas a mano una por una
 -- durante 2025 (titular chequeado incluido): eso ES la verificación
@@ -173,6 +172,41 @@ create table event_activations (
 -- Backfill: lo que hoy cuelga de una campaña queda activado en ella.
 insert into event_activations (tenant_id, org_id)
 select tenant_id, id from organizations where tenant_id is not null;
+
+-- ── Deduplicación ──────────────────────────────────────────────────────
+-- El modelo viejo repetía la fila de una organización en cada campaña
+-- (misma brigada, dos filas). El modelo nuevo tiene UNA entidad activada
+-- en N eventos: se elige como canónica la fila de la campaña más nueva,
+-- se le repuntan activaciones, verificaciones y eventos de clicks de sus
+-- duplicados, y recién entonces el slug puede ser único global — que es
+-- lo que el perfil público /e/<slug> exige.
+create temp table org_canonica as
+select distinct on (o.slug) o.slug, o.id
+from organizations o
+left join tenants t on t.id = o.tenant_id
+order by o.slug, t.year desc nulls last, o.created_at desc;
+
+create temp table org_duplicada as
+select o.id as dup_id, c.id as canon_id
+from organizations o
+join org_canonica c on c.slug = o.slug and c.id <> o.id;
+
+update event_activations ea
+   set org_id = d.canon_id
+  from org_duplicada d
+ where ea.org_id = d.dup_id
+   and not exists (select 1 from event_activations x
+                   where x.tenant_id = ea.tenant_id and x.org_id = d.canon_id);
+delete from event_activations ea using org_duplicada d where ea.org_id = d.dup_id;
+
+update org_verifications v set org_id = d.canon_id
+  from org_duplicada d where v.org_id = d.dup_id;
+update click_events e set org_id = d.canon_id
+  from org_duplicada d where e.org_id = d.dup_id;
+
+delete from organizations o using org_duplicada d where o.id = d.dup_id;
+
+alter table organizations add constraint organizations_slug_key unique (slug);
 
 -- ── Avales ─────────────────────────────────────────────────────────────
 -- 'solicitado': la entidad nueva indicó que esta organización la conoce.
