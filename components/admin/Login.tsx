@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Mail } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { brand } from "@/lib/brand";
-import { CUENTAS_DEMO, PASSWORD_DEMO, esDemo } from "@/lib/demo";
+import { CUENTAS_DEMO, demoPassword, esDemo } from "@/lib/demo";
 import { useEffect } from "react";
 
 /**
@@ -31,8 +31,10 @@ import { useEffect } from "react";
  */
 export function Login({ db }: { db: SupabaseClient }) {
   const [demo, setDemo] = useState(false);
+  const [claveDemo, setClaveDemo] = useState<string | null>(null);
   useEffect(() => {
     void esDemo().then(setDemo);
+    void demoPassword().then(setClaveDemo);
   }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,7 +84,7 @@ export function Login({ db }: { db: SupabaseClient }) {
   /* Acceso de un click, sólo en el despliegue de demostración: cinco
      cuentas, una por rol, para recorrer el ciclo completo sin tocar la
      base a mano. */
-  if (demo) {
+  if (demo && claveDemo) {
     return (
       <div className="card flex flex-col gap-4">
         <div>
@@ -101,7 +103,7 @@ export function Login({ db }: { db: SupabaseClient }) {
                 className="card card-hover flex w-full items-center justify-between gap-3 text-left"
                 style={{ padding: "12px 16px" }}
                 onClick={() =>
-                  db.auth.signInWithPassword({ email: c.email, password: PASSWORD_DEMO })
+                  db.auth.signInWithPassword({ email: c.email, password: claveDemo })
                 }
               >
                 <span>

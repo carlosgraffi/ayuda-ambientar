@@ -25,6 +25,13 @@ const config = {
    * producción.
    */
   demoMode: process.env.DEMO_MODE === "1",
+  /**
+   * En modo demo la contraseña es pública a propósito — el login de un
+   * click se la muestra a cualquiera. Publicarla acá en vez de escribirla
+   * en el código es lo que permite que cada despliegue tenga la suya.
+   */
+  demoPassword:
+    process.env.DEMO_MODE === "1" ? (process.env.DEMO_PASSWORD ?? null) : null,
 };
 
 await mkdir("public", { recursive: true });

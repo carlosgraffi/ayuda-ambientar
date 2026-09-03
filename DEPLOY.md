@@ -419,21 +419,24 @@ tiene campañas reales.
 3. Sembrar la matriz completa:
 
 ```bash
-SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run seed:demo
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... DEMO_PASSWORD=<elegila> npm run seed:demo
 ```
 
 4. Construir con el modo demo:
 
 ```bash
-DEMO_MODE=1 SUPABASE_URL=... SUPABASE_ANON_KEY=... FIRMS_API_KEY=... npm run build
+DEMO_MODE=1 DEMO_PASSWORD=<la misma> SUPABASE_URL=... SUPABASE_ANON_KEY=... FIRMS_API_KEY=... npm run build
 ```
 
 Para hospedarlo: un segundo proyecto de Cloudflare Pages sobre el mismo
 repo, con `DEMO_MODE=1` y las claves del proyecto demo en sus variables.
 
 El login muestra cinco cuentas de un click (donante, entidad en proceso,
-validadora, moderadora, superadmin — contraseña `demo-ayuda-2026`), cada
-una con su tour. `/tour` cuenta el viaje completo de una entidad y
+validadora, moderadora, superadmin), cada una con su tour. La contraseña
+no vive en el repositorio: la elegís por despliegue en `DEMO_PASSWORD`
+—el mismo valor en el seed y en el build— y rotarla es volver a correr el
+seed. Que el login la muestre a cualquiera es el punto del demo; que esté
+en el código no. `/tour` cuenta el viaje completo de una entidad y
 `/demo-embed` muestra el widget incrustado en un diario simulado.
 
 ## Probar el enrutado por dominio antes de desplegar

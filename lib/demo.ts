@@ -1,17 +1,26 @@
 "use client";
 
-/** Lee el modo demo del config publicado en el build. */
-let cache: boolean | null = null;
+/** Lee el modo demo (y su contraseña) del config publicado en el build. */
+let cache: { demo: boolean; password: string | null } | null = null;
 
-export async function esDemo(): Promise<boolean> {
-  if (cache !== null) return cache;
+async function leer() {
+  if (cache) return cache;
   try {
     const r = await fetch("/config.json", { cache: "no-store" });
-    cache = Boolean((await r.json()).demoMode);
+    const c = await r.json();
+    cache = { demo: Boolean(c.demoMode), password: c.demoPassword ?? null };
   } catch {
-    cache = false;
+    cache = { demo: false, password: null };
   }
   return cache;
+}
+
+export async function esDemo(): Promise<boolean> {
+  return (await leer()).demo;
+}
+
+export async function demoPassword(): Promise<string | null> {
+  return (await leer()).password;
 }
 
 export const CUENTAS_DEMO = [
@@ -22,4 +31,3 @@ export const CUENTAS_DEMO = [
   { email: "admin@demo.ambient.ar", rol: "Super admin", detalle: "Wizard y solicitudes" },
 ] as const;
 
-export const PASSWORD_DEMO = "demo-ayuda-2026";

@@ -14,7 +14,13 @@
  */
 import { serviceClient } from "../lib/supabase";
 
-const PASSWORD = "demo-ayuda-2026";
+/**
+ * La contraseña de las cuentas demo viene del entorno: cada despliegue
+ * elige la suya y rotarla es volver a correr este seed. En el repo no
+ * vive ninguna credencial — ni siquiera la del demo: una contraseña
+ * escrita en un repositorio público es una que nadie puede rotar.
+ */
+const PASSWORD = process.env.DEMO_PASSWORD ?? "";
 
 const USUARIOS = [
   { key: "donante", email: "donante@demo.ambient.ar" },
@@ -28,6 +34,12 @@ async function main() {
   const db = serviceClient();
   if (!db) {
     console.error("Faltan SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.");
+    process.exit(1);
+  }
+  if (PASSWORD.length < 12) {
+    console.error(
+      "Falta DEMO_PASSWORD (12+ caracteres). Es la contraseña de las cinco cuentas demo; elegila por despliegue.",
+    );
     process.exit(1);
   }
 
@@ -59,6 +71,8 @@ async function main() {
       const existente = data.users.find((x) => x.email === u.email);
       if (!existente) throw new Error(`no pude crear ${u.email}: ${r.error?.message}`);
       ids[u.key] = existente.id;
+      // Re-correr el seed con otra DEMO_PASSWORD rota las cuentas.
+      await db.auth.admin.updateUserById(existente.id, { password: PASSWORD });
     }
   }
   console.log("✓ 5 cuentas demo");
@@ -269,7 +283,7 @@ async function main() {
   console.log("✓ avales, checklist, reporte y necesidades (una vencida)");
 
   console.log(`\nListo. Cuentas: ${USUARIOS.map((u) => u.email).join(", ")}`);
-  console.log(`Contraseña de todas: ${PASSWORD}`);
+  console.log("Contraseña de todas: la de DEMO_PASSWORD.");
 }
 
 main();
