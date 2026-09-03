@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { brand } from "@/lib/brand";
-import { getTenants } from "@/lib/content";
+import { getEntities, getTenants } from "@/lib/content";
 import { canonicalUrl } from "@/lib/urls";
 
 /** Requerido por `output: export`: se genera en el build, no por request. */
@@ -24,6 +24,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(t.lastReviewed),
       changeFrequency: "daily" as const,
       priority: 1,
+    })),
+    // Los perfiles del directorio permanente: es donde una búsqueda por el
+    // nombre de la organización tiene que caer.
+    ...(await getEntities()).map((o) => ({
+      url: `${brand.url}/e/${o.slug}/`,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
     })),
   ];
 }
