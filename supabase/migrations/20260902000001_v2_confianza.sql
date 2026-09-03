@@ -143,6 +143,13 @@ alter table organizations
 -- Las entidades son permanentes: la campaña pasa a ser opcional.
 alter table organizations alter column tenant_id drop not null;
 
+-- El slug pasa a ser único GLOBAL. La unicidad por (tenant, slug) dejó de
+-- servir dos veces: el perfil público vive en /e/<slug>, y con tenant_id
+-- NULL el par ni siquiera restringe — en Postgres los NULL nunca chocan
+-- entre sí, así que cada corrida de un seed podía duplicar entidades.
+alter table organizations drop constraint organizations_tenant_id_slug_key;
+alter table organizations add constraint organizations_slug_key unique (slug);
+
 -- Las 28 organizaciones existentes fueron verificadas a mano una por una
 -- durante 2025 (titular chequeado incluido): eso ES la verificación
 -- completa, aunque hoy esté vencida — y el vencimiento ya se muestra.
@@ -238,8 +245,22 @@ alter table org_needs
   add column covered_at timestamptz,
   add column updated_at timestamptz not null default now();
 
+-- La frescura de una necesidad la mueve la ENTIDAD, no cualquier proceso:
+-- para usuarios finales el trigger pisa la fecha (como en el resto del
+-- esquema), pero el seed y los procesos internos pueden fecharla — el
+-- demo necesita mostrar una necesidad vieja con su badge de
+-- "desactualizado", y eso es imposible si toda escritura la rejuvenece.
+create or replace function touch_updated_at_usuario() returns trigger
+language plpgsql as $$
+begin
+  if coalesce(auth.role(), '') in ('authenticated', 'anon') then
+    new.updated_at = now();
+  end if;
+  return new;
+end;
+$$;
 create trigger org_needs_touch before update on org_needs
-  for each row execute function touch_updated_at();
+  for each row execute function touch_updated_at_usuario();
 
 -- Marcar cubierto guarda cuándo: el sitio lo muestra tachado 72 hs
 -- ("ya no hace falta traer más") y después lo oculta.
@@ -385,6 +406,20 @@ begin
   if new.is_validator is distinct from old.is_validator
      and not exists (select 1 from super_admins where user_id = auth.uid()) then
     raise exception 'solo el superadmin habilita organizaciones validadoras';
+  end if;
+
+  -- Toda decisión de confianza deja constancia de quién la tomó. Las
+  -- automáticas ya se registran en recalcular_nivel; éstas son las de
+  -- personas, que son justamente las que más importa poder reconstruir.
+  if new.verification_level is distinct from old.verification_level
+     or new.status is distinct from old.status
+     or new.is_validator is distinct from old.is_validator then
+    insert into audit_log (tenant_id, actor, entity, entity_id, action, diff)
+    values (old.tenant_id, auth.uid(), 'organizations', old.id, 'cambio_confianza',
+            jsonb_build_object(
+              'nivel', jsonb_build_array(old.verification_level, new.verification_level),
+              'estado', jsonb_build_array(old.status, new.status),
+              'validadora', jsonb_build_array(old.is_validator, new.is_validator)));
   end if;
 
   return new;

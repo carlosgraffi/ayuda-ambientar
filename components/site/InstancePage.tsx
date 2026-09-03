@@ -125,9 +125,10 @@ export function InstancePage({ tenant }: { tenant: Tenant }) {
           </div>
 
           {/* Un mapa de focos ACTIVOS en una campaña cerrada mostraría el
-              fuego de hoy junto a datos de otro año: dos cosas distintas
-              con la misma pinta. */}
-          {!cerrada && (
+              fuego de hoy junto a datos de otro año. Y una campaña sin
+              recuadro en regions.json directamente no tiene mapa: mejor
+              ninguno que uno del lugar equivocado. */}
+          {!cerrada && REGION_BBOX[tenant.campaign] && (
             <div className={hotspots.length ? "mb-10" : ""}>
               <FiresMapPanel
                 slug={tenant.campaign}

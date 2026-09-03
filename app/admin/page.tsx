@@ -11,6 +11,7 @@ import { MyEntityPanel } from "@/components/admin/MyEntityPanel";
 import { ValidatorInbox } from "@/components/admin/ValidatorInbox";
 import { ModeratorPanel } from "@/components/admin/ModeratorPanel";
 import { InstanceWizard } from "@/components/admin/InstanceWizard";
+import { DemoTour } from "@/components/admin/DemoTour";
 
 /**
  * El panel.
@@ -189,9 +190,12 @@ function Marco({
           </span>
         </a>
         {onSalir && (
-          <button className="btn btn-ghost btn-sm" onClick={onSalir}>
-            Salir
-          </button>
+          <span className="flex items-center gap-2">
+            <DemoTour />
+            <button className="btn btn-ghost btn-sm" onClick={onSalir}>
+              Salir
+            </button>
+          </span>
         )}
       </div>
       {children}

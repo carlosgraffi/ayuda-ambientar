@@ -72,6 +72,7 @@ export function RequestsInbox({ db }: { db: SupabaseClient }) {
   return (
     <div
       className="flex flex-col gap-4"
+      data-tour="solicitudes"
       style={{ borderTop: "1px solid var(--border-hairline)", paddingTop: 32 }}
     >
       <div>

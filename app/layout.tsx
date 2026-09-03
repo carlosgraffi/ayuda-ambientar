@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import { brand } from "@/lib/brand";
+import { DemoBanner } from "@/components/site/DemoBanner";
 import "./globals.css";
 
 /**
@@ -61,7 +62,10 @@ export default function RootLayout({
         <meta name="color-scheme" content="light dark" />
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <DemoBanner />
+        {children}
+      </body>
     </html>
   );
 }

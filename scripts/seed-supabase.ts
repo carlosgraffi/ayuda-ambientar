@@ -123,7 +123,7 @@ async function main() {
             verification_level: 2,
             province: t.campaign === "corrientes" ? "Corrientes" : "Río Negro",
           },
-          { onConflict: "tenant_id,slug" },
+          { onConflict: "slug" },
         )
         .select("id")
         .single();

@@ -186,10 +186,16 @@ update organizations set verification_level = 2, status = 'verificada'
 reset role;
 reset request.jwt.claims;
 do $$
-declare n int;
+declare n int; quien uuid;
 begin
   select verification_level into n from organizations where slug = 'brigada-nueva';
   assert n = 2, 'el nivel 2 lo pone el moderador de la región';
+
+  select actor into quien from audit_log
+   where action = 'cambio_confianza'
+   order by occurred_at desc limit 1;
+  assert quien = 'e0000000-0000-0000-0000-000000000001',
+    'la decisión del moderador queda en el log, con su autor';
 end $$;
 
 -- El nivel 2 no se degrada solo: lo puso una persona.

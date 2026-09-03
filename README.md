@@ -67,6 +67,10 @@ npx supabase start && npm run seed && npm run test:rls
 | `lib/tenants.ts` | El registro de campañas. Empezá por acá. |
 | `lib/rails.ts` | Medios de transferencia por país. Agregar uno es agregar un archivo. |
 | `content/` | El contenido versionado, que además es el respaldo del build. |
+| `app/registrarse/` | Auto-registro de entidades. Nivel 0 no se publica. |
+| `app/e/[slug]/` | Perfiles públicos: avales, necesidades y reporte. |
+| `functions/api/v1/` | API pública de datos abiertos, con atribución. |
+| `public/widget.js` | El listado embebible para medios y municipios. |
 | `supabase/` | Esquema, políticas de acceso y sus pruebas. |
 | `components/admin/` | El panel, en `/admin`. Cliente, contra Supabase. |
 | `functions/` | Cloudflare: resolución de dominio propio, registro de interacciones y publicación. |

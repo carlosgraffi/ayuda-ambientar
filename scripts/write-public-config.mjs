@@ -18,6 +18,13 @@ import { writeFile, mkdir } from "node:fs/promises";
 const config = {
   supabaseUrl: process.env.SUPABASE_URL ?? null,
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY ?? null,
+  /**
+   * Modo demostración: cuentas de un click y tours guiados. Se prende con
+   * DEMO_MODE=1 en un despliegue APARTE con su propia base — los datos
+   * ficticios y las contraseñas conocidas no pueden convivir con
+   * producción.
+   */
+  demoMode: process.env.DEMO_MODE === "1",
 };
 
 await mkdir("public", { recursive: true });

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Mail } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { brand } from "@/lib/brand";
+import { CUENTAS_DEMO, PASSWORD_DEMO, esDemo } from "@/lib/demo";
+import { useEffect } from "react";
 
 /**
  * Entrada al panel.
@@ -28,6 +30,10 @@ import { brand } from "@/lib/brand";
  * autorización vive en las políticas, no acá.
  */
 export function Login({ db }: { db: SupabaseClient }) {
+  const [demo, setDemo] = useState(false);
+  useEffect(() => {
+    void esDemo().then(setDemo);
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [modo, setModo] = useState<"enlace" | "clave">("enlace");
@@ -69,6 +75,51 @@ export function Login({ db }: { db: SupabaseClient }) {
         <p style={{ color: "var(--text-muted)" }}>
           Abrilo desde este mismo dispositivo. Vence en una hora.
         </p>
+      </div>
+    );
+  }
+
+  /* Acceso de un click, sólo en el despliegue de demostración: cinco
+     cuentas, una por rol, para recorrer el ciclo completo sin tocar la
+     base a mano. */
+  if (demo) {
+    return (
+      <div className="card flex flex-col gap-4">
+        <div>
+          <p className="eyebrow">{brand.name} · demostración</p>
+          <h1 className="heading-2 mt-2">Entrá con un rol</h1>
+        </div>
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Datos ficticios. Cada cuenta muestra lo que su rol puede hacer — y
+          lo que no puede, que es la mitad del punto.
+        </p>
+        <ul className="flex flex-col gap-2">
+          {CUENTAS_DEMO.map((c) => (
+            <li key={c.email}>
+              <button
+                type="button"
+                className="card card-hover flex w-full items-center justify-between gap-3 text-left"
+                style={{ padding: "12px 16px" }}
+                onClick={() =>
+                  db.auth.signInWithPassword({ email: c.email, password: PASSWORD_DEMO })
+                }
+              >
+                <span>
+                  <span className="block" style={{ color: "var(--text-strong)" }}>
+                    {c.rol}
+                  </span>
+                  <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+                    {c.detalle}
+                  </span>
+                </span>
+                <span className="badge badge-outline shrink-0">entrar →</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <a href="/tour/" className="text-sm">
+          O leé primero el viaje completo de una entidad →
+        </a>
       </div>
     );
   }

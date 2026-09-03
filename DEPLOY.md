@@ -380,6 +380,62 @@ La aprobación manual no es una limitación temporal hasta automatizarla: es
 la decisión. El autoservicio abierto es superficie de fraude, y acá la
 marca **es** la confianza.
 
+## 11 · La v2: verificación distribuida
+
+El esquema de la v2 (migraciones `20260902...`) suma auto-registro,
+niveles de verificación, avales, moderación regional, necesidades con
+catálogo, eventos con activación, reportes y la API pública. Para
+aplicarlo en producción:
+
+```bash
+npx supabase db push
+```
+
+Los roles nuevos se otorgan con una fila, igual que siempre:
+
+```sql
+-- Moderadora regional (ve y opera SOLO sus provincias):
+insert into moderator_regions (user_id, province)
+select id, 'Río Negro' from auth.users where email = 'persona@ejemplo.org';
+
+-- Organización validadora (puede avalar): la habilita el superadmin
+update organizations set is_validator = true where slug = '...';
+```
+
+La regla que las pruebas garantizan (`npm run test:rls`): ningún rol se
+auto-eleva. El sistema publica solo hasta nivel 1 (dos avales, o uno más
+huella pública confirmada); al nivel 2 sólo llega una persona moderadora,
+y toda decisión de confianza queda en `audit_log` con su autor.
+
+## 12 · El demo
+
+El entregable de la v2 es un demo navegable con datos ficticios y tours
+por rol. **Corre en un proyecto de Supabase APARTE** — tiene cuentas con
+contraseña conocida y entidades inventadas; el seed se niega si la base
+tiene campañas reales.
+
+1. Crear un proyecto nuevo en Supabase (o `npx supabase start` local).
+2. `npx supabase db push` contra ese proyecto.
+3. Sembrar la matriz completa:
+
+```bash
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run seed:demo
+```
+
+4. Construir con el modo demo:
+
+```bash
+DEMO_MODE=1 SUPABASE_URL=... SUPABASE_ANON_KEY=... FIRMS_API_KEY=... npm run build
+```
+
+Para hospedarlo: un segundo proyecto de Cloudflare Pages sobre el mismo
+repo, con `DEMO_MODE=1` y las claves del proyecto demo en sus variables.
+
+El login muestra cinco cuentas de un click (donante, entidad en proceso,
+validadora, moderadora, superadmin — contraseña `demo-ayuda-2026`), cada
+una con su tour. `/tour` cuenta el viaje completo de una entidad y
+`/demo-embed` muestra el widget incrustado en un diario simulado.
+
 ## Probar el enrutado por dominio antes de desplegar
 
 `npm run dev` no ejecuta las Functions. Para probarlas hace falta el build
