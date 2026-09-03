@@ -39,11 +39,15 @@ export function Disclaimer() {
             sitio oficial de la organización antes de transferir.
           </p>
           <p>
-            Si conocés una organización que debería estar en esta lista,{" "}
+            ¿Tu organización debería estar acá? Puede{" "}
+            <a href="/registrarse/">registrarse sola</a>: carga sus datos,
+            otras organizaciones la avalan o la moderación la verifica, y
+            recién entonces se publica. Y si conocés una que debería estar
+            pero no es tuya,{" "}
             <a href={`mailto:${brand.contactEmail}?subject=Sumar una organización`}>
-              escribinos
-            </a>{" "}
-            y la cargamos una vez verificada su identidad.
+              recomendala por correo
+            </a>
+            .
           </p>
         </div>
       </details>

@@ -1,5 +1,4 @@
 import { Megaphone, PlusCircle, Send } from "lucide-react";
-import { brand } from "@/lib/brand";
 
 /**
  * Qué muestra la portada cuando no hay ninguna campaña abierta.
@@ -25,13 +24,10 @@ const OPCIONES = [
   },
   {
     icono: PlusCircle,
-    titulo: "Contanos de una organización",
+    titulo: "Registrá tu organización",
     texto:
-      "Bomberos voluntarios, brigadas y espacios comunitarios trabajan todo el año, no sólo durante el fuego. Si conocés uno que reciba aportes, lo chequeamos y queda listo para la próxima.",
-    accion: {
-      texto: "Sumar una organización",
-      href: `mailto:${brand.contactEmail}?subject=Sumar una organización`,
-    },
+      "Bomberos voluntarios, brigadas y espacios comunitarios trabajan todo el año, no sólo durante el fuego. Registrarse lleva cinco minutos y deja los datos verificados y listos para la próxima emergencia — sin esperar a que haya una.",
+    accion: { texto: "Registrarla ahora", href: "/registrarse/" },
   },
   {
     icono: Send,
