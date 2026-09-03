@@ -4,7 +4,8 @@ import Image from "next/image";
 import { Copy, Check, Flame, Instagram, Newspaper, Mail, Share2 } from "lucide-react";
 import { useState } from "react";
 import type { Organization, OrgLink } from "@/lib/types";
-import { ORG_TYPE_LABEL } from "@/lib/types";
+import { ORG_TYPE_LABEL, URGENCY_LABEL } from "@/lib/types";
+import { VerificationBadge } from "./VerificationBadge";
 import { getRail, primaryChannel } from "@/lib/rails";
 import { num } from "@/lib/format";
 import { track } from "@/lib/track";
@@ -110,8 +111,18 @@ export function OrgCard({
         <div className="min-w-0">
           <p className="eyebrow" style={{ color: "var(--text-faint)" }}>
             {ORG_TYPE_LABEL[org.type]}
+            {org.locality && ` · ${org.locality}`}
           </p>
-          <h3 className="heading-3 mt-1.5">{org.name}</h3>
+          {/* El nombre lleva al perfil: avales, necesidades completas y
+              el botón de reporte viven ahí. */}
+          <h3 className="heading-3 mt-1.5">
+            <a
+              href={`/e/${org.slug}/`}
+              style={{ color: "var(--text-strong)", textDecoration: "none" }}
+            >
+              {org.name}
+            </a>
+          </h3>
         </div>
         {org.urgent && (
           <span className="badge badge-accent shrink-0">
@@ -120,6 +131,48 @@ export function OrgCard({
           </span>
         )}
       </header>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <VerificationBadge level={org.verificationLevel ?? 2} />
+        {org.endorsements && org.endorsements.length > 0 && (
+          <a href={`/e/${org.slug}/`} className="text-sm">
+            {org.endorsements.length}{" "}
+            {org.endorsements.length === 1 ? "aval" : "avales"}
+          </a>
+        )}
+      </div>
+
+      {/* Insumos que faltan AHORA. Cubierto no aparece acá: la tarjeta es
+          para decidir, el historial vive en el perfil. */}
+      {(() => {
+        const faltan = org.needs.filter(
+          (n) => n.supplyName && n.urgency && n.urgency !== "cubierto",
+        );
+        if (!faltan.length) return null;
+        return (
+          <div className="flex flex-wrap gap-1.5">
+            {faltan.slice(0, 4).map((n) => (
+              <span
+                key={n.supplyName}
+                className="badge"
+                style={
+                  n.urgency === "urgente"
+                    ? { background: "var(--riesgo-5-soft)", color: "var(--riesgo-5)" }
+                    : { background: "var(--bg-sunken)", color: "var(--text-muted)" }
+                }
+                title={`${URGENCY_LABEL[n.urgency!]}${n.quantityNote ? ` · ${n.quantityNote}` : ""}`}
+              >
+                {n.supplyName}
+              </span>
+            ))}
+            {faltan.length > 4 && (
+              <a href={`/e/${org.slug}/`} className="badge badge-outline">
+                +{faltan.length - 4}
+              </a>
+            )}
+          </div>
+        );
+      })()}
 
       <p className="grow" style={{ color: "var(--text-muted)" }}>
         {org.description}

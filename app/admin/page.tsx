@@ -7,6 +7,10 @@ import { getBrowserClient } from "@/lib/admin/browser";
 import { Login } from "@/components/admin/Login";
 import { CampaignPanel, type CampaignFila } from "@/components/admin/CampaignPanel";
 import { RequestsInbox } from "@/components/admin/RequestsInbox";
+import { MyEntityPanel } from "@/components/admin/MyEntityPanel";
+import { ValidatorInbox } from "@/components/admin/ValidatorInbox";
+import { ModeratorPanel } from "@/components/admin/ModeratorPanel";
+import { InstanceWizard } from "@/components/admin/InstanceWizard";
 
 /**
  * El panel.
@@ -103,16 +107,28 @@ export default function AdminPage() {
 
   return (
     <Marco onSalir={() => db.auth.signOut()}>
-      <div className="flex flex-col gap-6">
-        <h1 className="heading-2">Campañas</h1>
+      <div className="flex flex-col gap-10">
+        {/* Cada bloque decide solo si aparece: el owner ve su entidad, la
+            validadora sus pedidos, la moderadora su cola. La misma página,
+            distinta según quién sos — y quién sos lo dice la base. */}
+        <MyEntityPanel db={db} />
+        <ValidatorInbox db={db} />
+        <ModeratorPanel db={db} />
+
+        <div className="flex flex-col gap-6">
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="heading-2">Campañas</h1>
+          <InstanceWizard db={db} onCreated={() => window.location.reload()} />
+        </div>
         {campanias === null ? (
           <p style={{ color: "var(--text-muted)" }}>Cargando…</p>
         ) : campanias.length === 0 ? (
-          <div className="card flex flex-col gap-2">
-            <p className="eyebrow">Sin campañas</p>
+          <div className="card card-subtle flex flex-col gap-2">
+            <p className="eyebrow">Sin campañas asignadas</p>
             <p style={{ color: "var(--text-muted)" }}>
-              Tu cuenta entró bien, pero todavía no es miembro de ninguna
-              campaña. Pedile a quien administra la instancia que te agregue.
+              Tu cuenta no es miembro de ninguna campaña. Si tenés una
+              organización, registrala en{" "}
+              <a href="/registrarse/">/registrarse</a>.
             </p>
           </div>
         ) : (
@@ -145,8 +161,8 @@ export default function AdminPage() {
           </ul>
         )}
 
-        {/* Sólo aparece si hay filas, y sólo hay filas para quien
-            administra la plataforma: lo decide la base, no esta pantalla. */}
+        </div>
+
         <RequestsInbox db={db} />
       </div>
     </Marco>

@@ -37,7 +37,22 @@ export function OrgList({
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("todas");
+  const [insumo, setInsumo] = useState<string>("");
   const [toast, setToast] = useState<string | null>(null);
+
+  /**
+   * "¿Quién necesita motobombas cerca de Epuyén?" — el filtro por insumo
+   * sale de lo que las entidades declararon necesitar AHORA. Cubierto no
+   * cuenta: ya no hace falta traer más.
+   */
+  const insumos = useMemo(() => {
+    const set = new Set<string>();
+    for (const org of organizations)
+      for (const n of org.needs)
+        if (n.supplyName && n.urgency && n.urgency !== "cubierto")
+          set.add(n.supplyName);
+    return [...set].sort((a, b) => a.localeCompare(b, "es"));
+  }, [organizations]);
 
   const counts = useMemo(() => {
     const byType = Object.fromEntries(
@@ -58,6 +73,13 @@ export function OrgList({
         if (filter === "urgentes" && !org.urgent) return false;
         if (filter !== "todas" && filter !== "urgentes" && org.type !== filter)
           return false;
+        if (
+          insumo &&
+          !org.needs.some(
+            (n) => n.supplyName === insumo && n.urgency && n.urgency !== "cubierto",
+          )
+        )
+          return false;
         if (!q) return true;
         return (
           org.name.toLowerCase().includes(q) ||
@@ -67,7 +89,7 @@ export function OrgList({
         );
       })
       .sort((a, b) => Number(b.urgent) - Number(a.urgent));
-  }, [organizations, query, filter]);
+  }, [organizations, query, filter, insumo]);
 
   function pickRandom() {
     if (!visible.length) return;
@@ -159,6 +181,22 @@ export function OrgList({
             <Shuffle size={15} strokeWidth={1.75} aria-hidden />
             Elegir una al azar
           </button>
+          {insumos.length > 0 && (
+            <select
+              value={insumo}
+              onChange={(e) => setInsumo(e.target.value)}
+              aria-label="Filtrar por insumo que necesitan"
+              className="chip"
+              style={{ appearance: "auto" }}
+            >
+              <option value="">Necesitan…</option>
+              {insumos.map((i) => (
+                <option key={i} value={i}>
+                  {i}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <p aria-live="polite" className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -180,6 +218,7 @@ export function OrgList({
             onClick={() => {
               setQuery("");
               setFilter("todas");
+              setInsumo("");
             }}
           >
             <X size={15} strokeWidth={1.75} aria-hidden />

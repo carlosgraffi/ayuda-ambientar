@@ -103,8 +103,9 @@ async function main() {
        * tener verificaciones y eventos colgando, y borrarla los perdería.
        * El esquema archiva, no borra.
        *
-       * Se siembran como `verificada` porque son los datos que el sitio ya
-       * venía publicando. El flujo real de verificación llega en F4.
+       * Se siembran como `verificada` y nivel 2: fueron verificadas a
+       * mano una por una en 2025, titular incluido. Eso es la
+       * verificación completa del modelo v2.
        */
       const { data: fila, error: e } = await db
         .from("organizations")
@@ -119,6 +120,8 @@ async function main() {
             holder_status: org.holderStatus,
             urgent: org.urgent,
             status: "verificada",
+            verification_level: 2,
+            province: t.campaign === "corrientes" ? "Corrientes" : "Río Negro",
           },
           { onConflict: "tenant_id,slug" },
         )
@@ -131,6 +134,10 @@ async function main() {
       }
 
       const orgId = fila.id as string;
+
+      await db
+        .from("event_activations")
+        .upsert({ tenant_id: tenantId, org_id: orgId }, { onConflict: "tenant_id,org_id" });
 
       // Lo que cuelga de la organización sí se reemplaza: son sus datos de
       // contacto, no tienen historia propia que preservar.
