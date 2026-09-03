@@ -415,7 +415,14 @@ contraseña conocida y entidades inventadas; el seed se niega si la base
 tiene campañas reales.
 
 1. Crear un proyecto nuevo en Supabase (o `npx supabase start` local).
-2. `npx supabase db push` contra ese proyecto.
+   **Sin pagar de más:** el plan es por organización y crear organizaciones
+   es gratis — creá una organización NUEVA en plan Free (selector de
+   organización → New organization) y el proyecto demo va ahí, no en la
+   organización Pro de producción. La única letra chica del plan gratuito:
+   el proyecto se pausa tras una semana sin uso; se despausa en un minuto
+   desde el dashboard antes de mostrar el demo.
+2. `npx supabase db push` contra ese proyecto
+   (`npx supabase link --project-ref <ref-del-demo>` primero).
 3. Sembrar la matriz completa:
 
 ```bash
