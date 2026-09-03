@@ -33,14 +33,17 @@ insert into memberships (user_id, tenant_id, role) values
   ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', 'editor'),
   ('22222222-2222-2222-2222-222222222222', 'bbbbbbbb-0000-0000-0000-000000000002', 'editor');
 
-insert into organizations (id, tenant_id, slug, name, type, description, holder_name, holder_status, status)
+-- v2: publicar exige además nivel de verificación ≥ 1. La organización
+-- verificada del fixture representa el régimen manual, que el backfill
+-- mapea a nivel 2.
+insert into organizations (id, tenant_id, slug, name, type, description, holder_name, holder_status, status, verification_level)
 values
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001',
    'bomberos-norte', 'Bomberos del Norte', 'bomberos', 'Descripción.',
-   'Asoc. Bomberos', 'declarado', 'verificada'),
+   'Asoc. Bomberos', 'declarado', 'verificada', 2),
   ('cccccccc-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001',
    'sin-chequear', 'Colecta sin chequear', 'comunidad', 'Descripción.',
-   null, 'no_declarado', 'borrador');
+   null, 'no_declarado', 'borrador', 0);
 
 insert into org_channels (org_id, rail, identifier) values
   ('cccccccc-0000-0000-0000-000000000001', 'alias_ar', 'bomberos.norte'),
