@@ -77,13 +77,12 @@ export function LatentNotice() {
           return (
             <li
               key={o.titulo}
-              data-disaster={destacada ? "fuego" : undefined}
               className="card flex h-full flex-col gap-3"
               style={
                 destacada
                   ? {
-                      background: "var(--accent-soft)",
-                      borderColor: "var(--accent-500)",
+                      background: "var(--cta-soft)",
+                      borderColor: "var(--cta-border)",
                     }
                   : undefined
               }
@@ -93,9 +92,7 @@ export function LatentNotice() {
                 strokeWidth={1.75}
                 aria-hidden
                 style={{
-                  color: o.accion?.primaria
-                    ? "var(--accent-600)"
-                    : "var(--text-faint)",
+                  color: o.accion?.primaria ? "var(--cta)" : "var(--text-faint)",
                 }}
               />
               <h3 className="heading-3">{o.titulo}</h3>
@@ -106,7 +103,7 @@ export function LatentNotice() {
                 <a
                   href={o.accion.href}
                   className={`btn btn-sm self-start ${
-                    o.accion.primaria ? "btn-accent" : "btn-secondary"
+                    o.accion.primaria ? "btn-cta" : "btn-secondary"
                   }`}
                 >
                   {o.accion.texto}
