@@ -168,6 +168,9 @@ function FormularioEntidad({ db, userId }: { db: SupabaseClient; userId: string 
   });
   const [busqueda, setBusqueda] = useState("");
   const [candidatas, setCandidatas] = useState<{ id: string; name: string }[]>([]);
+  const [sugeridas, setSugeridas] = useState<
+    { id: string; name: string; is_validator: boolean; verification_level: number; province: string | null }[]
+  >([]);
   const [avales, setAvales] = useState<{ id: string; name: string }[]>([]);
   const [estado, setEstado] = useState<"inicial" | "enviando" | "enviado">("inicial");
   const [error, setError] = useState<string | null>(null);
@@ -178,6 +181,17 @@ function FormularioEntidad({ db, userId }: { db: SupabaseClient; userId: string 
         .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
     [f.name],
   );
+
+  /* El directorio a la vista antes de pedir que busquen: nadie tiene por
+     qué saber el nombre exacto de la brigada de al lado. */
+  useEffect(() => {
+    void db
+      .from("organizations")
+      .select("id, name, is_validator, verification_level, province")
+      .gte("verification_level", 1)
+      .limit(30)
+      .then(({ data }) => setSugeridas((data ?? []) as never[]));
+  }, [db]);
 
   useEffect(() => {
     if (busqueda.trim().length < 3) return setCandidatas([]);
@@ -358,17 +372,33 @@ function FormularioEntidad({ db, userId }: { db: SupabaseClient; userId: string 
           que existís. Con dos avales tu entidad se publica sola, sin esperar
           a nadie.
         </p>
-        <input value={busqueda} placeholder="Buscá por nombre…"
-               onChange={(e) => setBusqueda(e.target.value)} style={campo} />
-        {candidatas.length > 0 && avales.length < 3 && (
-          <div className="flex flex-wrap gap-2">
-            {candidatas.map((c) => (
-              <button key={c.id} type="button" className="chip"
-                      onClick={() => { setAvales([...avales, c]); setBusqueda(""); }}>
-                + {c.name}
-              </button>
-            ))}
-          </div>
+        {avales.length < 3 && (() => {
+          /* Del directorio: las de tu provincia primero, validadoras antes
+             que el resto; el buscador queda para lo que no está a mano. */
+          const orden = (o: (typeof sugeridas)[number]) =>
+            (f.province && o.province === f.province ? 0 : 4) +
+            (o.is_validator ? 0 : 2) +
+            (o.verification_level >= 2 ? 0 : 1);
+          const enJuego = busqueda.trim().length >= 3
+            ? candidatas
+            : [...sugeridas]
+                .filter((s) => !avales.some((a) => a.id === s.id))
+                .sort((a, b) => orden(a) - orden(b) || a.name.localeCompare(b.name))
+                .slice(0, 6);
+          return enJuego.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {enJuego.map((c) => (
+                <button key={c.id} type="button" className="chip"
+                        onClick={() => { setAvales([...avales, c]); setBusqueda(""); }}>
+                  + {c.name}
+                </button>
+              ))}
+            </div>
+          ) : null;
+        })()}
+        {avales.length < 3 && (
+          <input value={busqueda} placeholder="¿No está en la lista? Buscala por nombre…"
+                 onChange={(e) => setBusqueda(e.target.value)} style={campo} />
         )}
         {avales.length > 0 && (
           <div className="flex flex-wrap gap-2">

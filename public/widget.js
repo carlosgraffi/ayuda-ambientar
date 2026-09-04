@@ -9,7 +9,13 @@
  * usar los datos.
  */
 (function () {
+  // currentScript es null cuando el anfitrión inyecta el script (GTM, un
+  // CMS): caer al último tag que apunte a este archivo.
   var script = document.currentScript;
+  if (!script) {
+    var tags = document.querySelectorAll('script[src*="widget.js"]');
+    script = tags[tags.length - 1];
+  }
   if (!script) return;
   var origen = new URL(script.src).origin;
   var params = new URLSearchParams();
@@ -30,5 +36,12 @@
     }
   });
 
-  script.parentNode.insertBefore(iframe, script);
+  // Si el script terminó en el <head> (React y algunos gestores de tags
+  // lo mueven ahí), un iframe al lado no se ve: va al body.
+  var destino = script.parentNode;
+  if (!destino || destino === document.head) {
+    document.body.appendChild(iframe);
+  } else {
+    destino.insertBefore(iframe, script);
+  }
 })();

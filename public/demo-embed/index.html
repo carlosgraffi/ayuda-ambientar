@@ -1,0 +1,74 @@
+<!doctype html>
+<!--
+  El diario simulado del demo, en HTML plano A PROPÓSITO.
+
+  Antes era una página de Next, y el widget no aparecía: React 19 hoistea
+  los <script> escritos en JSX al <head>, y widget.js inserta el iframe
+  junto al script — adentro del head, invisible. Un diario real embebe
+  con HTML plano, así que el demo también: acá el script corre exactamente
+  como le va a correr a un medio de verdad.
+-->
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Demo de embebido · El Diario de la Comarca</title>
+    <style>
+      body {
+        font-family: Georgia, "Times New Roman", serif;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px 20px;
+        color: #222;
+        background: #fff;
+      }
+      .kicker {
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 12px;
+        color: #888;
+      }
+      h1 {
+        font-size: 34px;
+        line-height: 1.15;
+        margin: 12px 0;
+      }
+      .lead {
+        font-size: 17px;
+        line-height: 1.6;
+        color: #333;
+      }
+      .nota {
+        font-size: 14px;
+        color: #777;
+        margin-top: 24px;
+      }
+      code {
+        font-size: 13px;
+        background: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="kicker">El Diario de la Comarca · sitio de demostración</p>
+    <h1>Dónde ayudar: el listado verificado de organizaciones</h1>
+    <p class="lead">
+      Publicamos el listado de entidades verificadas que reciben donaciones,
+      directo de la plataforma. Este recuadro se actualiza solo y cada
+      entidad muestra su nivel de verificación:
+    </p>
+
+    <!-- Sin data-event a propósito: esta página también existe en
+         producción, y un slug fijo sólo sería válido en un entorno. -->
+    <script src="/widget.js"></script>
+
+    <p class="nota">
+      Así se ve el widget embebido en un medio: una línea de
+      <code>&lt;script&gt;</code>, filtros opcionales por emergencia o
+      provincia, y la atribución siempre visible dentro del recuadro.
+    </p>
+  </body>
+</html>

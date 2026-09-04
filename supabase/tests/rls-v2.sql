@@ -98,8 +98,27 @@ update endorsements set status = 'activo',
        context_note = 'Trabajamos juntos en el incendio de El Bolsón 2025.'
  where endorser_org_id = 'b0000000-0000-0000-0000-000000000001';
 
--- La aserción corre como superusuario: el avalista no VE una entidad
--- nivel 0 ajena (eso también es la política funcionando).
+-- La avalista SÍ ve la ficha de quien la nombró — aunque esté en nivel
+-- 0: no se puede avalar (ni negarse con fundamento) a quien no se ve.
+do $$
+declare n int;
+begin
+  select count(*) into n from organizations where slug = 'brigada-nueva';
+  assert n = 1, 'la avalista ve la ficha de la entidad que le pide aval';
+end $$;
+
+-- Pero es un permiso de la nombrada hacia la nombrada, no una ventana
+-- general: la moderadora de OTRA región (sin pedido de por medio) no ve.
+set local request.jwt.claims = '{"sub":"e0000000-0000-0000-0000-000000000002","role":"authenticated"}';
+do $$
+declare n int;
+begin
+  select count(*) into n from organizations where slug = 'brigada-nueva';
+  assert n = 0, 'sin pedido de aval de por medio, nivel 0 sigue invisible';
+end $$;
+set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated"}';
+
+-- La aserción de nivel corre como superusuario.
 reset role;
 reset request.jwt.claims;
 do $$

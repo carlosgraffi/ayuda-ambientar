@@ -38,8 +38,18 @@ interface Necesidad {
 interface Aval {
   id: string;
   status: string;
+  endorser_org_id: string;
   endorser: { name: string } | null;
 }
+
+/** Cómo se lee cada estado desde el lado de quien pidió el aval. */
+const AVAL_LABEL: Record<string, string> = {
+  solicitado: "pedido enviado, sin respuesta todavía",
+  activo: "avaló",
+  ignorado: "no respondió",
+  en_revision: "en revisión",
+  revocado: "revocado",
+};
 
 interface Check {
   check_type: string;
@@ -126,15 +136,24 @@ function EntityEditor({
   const [avales, setAvales] = useState<Aval[]>([]);
   const [checks, setChecks] = useState<Check[]>([]);
   const [msj, setMsj] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [candidatas, setCandidatas] = useState<{ id: string; name: string }[]>([]);
+  const [sugeridas, setSugeridas] = useState<{ id: string; name: string }[]>([]);
+  const [errorAval, setErrorAval] = useState<string | null>(null);
+  const [nuevoInsumo, setNuevoInsumo] = useState("");
+  const [nuevaCantidad, setNuevaCantidad] = useState("");
 
   const cargar = useCallback(async () => {
     const [n, c, a, ch] = await Promise.all([
       db.from("org_needs")
         .select("id, urgency, quantity_note, delivery_note, updated_at, supply:supply_catalog(id, name)")
-        .eq("org_id", entidad.id),
+        .eq("org_id", entidad.id)
+        // Orden estable a propósito: sin esto Postgres devuelve las filas
+        // en cualquier orden y la lista salta al editar una cantidad.
+        .order("id"),
       db.from("supply_catalog").select("id, name, category").order("position"),
       db.from("endorsements")
-        .select("id, status, endorser:organizations!endorsements_endorser_org_id_fkey(name)")
+        .select("id, status, endorser_org_id, endorser:organizations!endorsements_endorser_org_id_fkey(name)")
         .eq("endorsed_org_id", entidad.id),
       db.from("verification_checks").select("check_type, result, notes").eq("org_id", entidad.id),
     ]);
@@ -181,14 +200,97 @@ function EntityEditor({
     void publicarSilencioso();
   }
 
-  async function agregarInsumo(supplyId: string) {
-    if (!supplyId) return;
+  async function agregarInsumo() {
+    if (!nuevoInsumo) return;
     await db.from("org_needs").insert({
-      org_id: entidad.id, kind: "insumos", supply_id: supplyId, urgency: "se_necesita",
+      org_id: entidad.id, kind: "insumos", supply_id: nuevoInsumo,
+      urgency: "se_necesita", quantity_note: nuevaCantidad.trim() || null,
     });
+    setNuevoInsumo("");
+    setNuevaCantidad("");
     await cargar();
     void publicarSilencioso();
   }
+
+  async function ponerCantidad(id: string, quantity_note: string | null) {
+    await db.from("org_needs").update({ quantity_note }).eq("id", id);
+    await cargar();
+    void publicarSilencioso();
+  }
+
+  /**
+   * Quitar borra de verdad, sin arrepentimiento — a diferencia del resto
+   * del esquema, una necesidad no es un registro de auditoría: "cubierto"
+   * es el cierre con historia, esto es para el ítem agregado por error.
+   */
+  async function quitarNecesidad(id: string) {
+    await db.from("org_needs").delete().eq("id", id);
+    await cargar();
+    void publicarSilencioso();
+  }
+
+  /**
+   * Pedir un aval después del registro. La política de la base ya lo
+   * permitía (hasta 3 en total); lo que faltaba era esta puerta.
+   */
+  async function pedirAval(endorserId: string) {
+    const { data } = await db.auth.getUser();
+    const { error } = await db.from("endorsements").insert({
+      endorser_org_id: endorserId, endorsed_org_id: entidad.id,
+      status: "solicitado", created_by: data.user?.id,
+    });
+    setErrorAval(error?.message ?? null);
+    setBusqueda("");
+    setCandidatas([]);
+    await cargar();
+  }
+
+  /**
+   * El directorio primero, la búsqueda después: quien pide un aval no
+   * tiene por qué saber cómo se llama exactamente cada organización.
+   * Verificadas de su provincia arriba, validadoras antes que el resto.
+   */
+  useEffect(() => {
+    void db
+      .from("organizations")
+      .select("id, name, is_validator, verification_level, province")
+      .gte("verification_level", 1)
+      .neq("id", entidad.id)
+      .limit(30)
+      .then(({ data }) => {
+        const orden = (o: { is_validator: boolean; verification_level: number; province: string | null }) =>
+          (o.province === entidad.province ? 0 : 4) +
+          (o.is_validator ? 0 : 2) +
+          (o.verification_level >= 2 ? 0 : 1);
+        setSugeridas(
+          (data ?? [])
+            .sort((a, b) => orden(a) - orden(b) || a.name.localeCompare(b.name))
+            .slice(0, 6)
+            .map((o) => ({ id: o.id, name: o.name })),
+        );
+      });
+  }, [db, entidad.id, entidad.province]);
+
+  /* Mismo buscador que /registrarse: por nombre, de a 5, excluyendo la
+     propia entidad y las que ya están en la lista. */
+  useEffect(() => {
+    if (busqueda.trim().length < 3) {
+      setCandidatas([]);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const { data } = await db
+        .from("organizations")
+        .select("id, name")
+        .ilike("name", `%${busqueda.trim()}%`)
+        .neq("id", entidad.id)
+        .limit(5);
+      setCandidatas(
+        (data ?? []).filter((c) => !avales.some((a) => a.endorser_org_id === c.id)),
+      );
+    }, 300);
+    return () => clearTimeout(t);
+  }, [busqueda, db, entidad.id, avales]);
 
   async function enviarARevision() {
     await db.from("organizations").update({ status: "en_revision" }).eq("id", entidad.id);
@@ -238,10 +340,54 @@ function EntityEditor({
           <ul className="text-sm" style={{ color: "var(--text-muted)" }}>
             {avales.map((a) => (
               <li key={a.id}>
-                {a.endorser?.name} — {a.status === "activo" ? "avaló" : a.status}
+                {a.endorser?.name} — {AVAL_LABEL[a.status] ?? a.status}
               </li>
             ))}
           </ul>
+        )}
+        {/* Pedir un aval: la mitad del camino a publicarse. Se muestra
+            mientras quede cupo (la base admite hasta 3 pedidos). */}
+        {avales.length < 3 && (
+          <div className="flex flex-col gap-2">
+            <span className="metric-label">Pedir un aval</span>
+            {/* Primero el directorio; el buscador es para lo que no está
+                a la vista. */}
+            {(() => {
+              const enJuego = busqueda.trim().length >= 3
+                ? candidatas
+                : sugeridas.filter((s) => !avales.some((a) => a.endorser_org_id === s.id));
+              return enJuego.length > 0 ? (
+                <ul className="flex flex-wrap gap-2">
+                  {enJuego.map((c) => (
+                    <li key={c.id}>
+                      <button type="button" className="chip" onClick={() => void pedirAval(c.id)}>
+                        Pedirle aval a {c.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null;
+            })()}
+            <input
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="¿No está en la lista? Buscala por nombre…"
+              style={campo}
+            />
+            {busqueda.trim().length >= 3 && candidatas.length === 0 && (
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                No aparece ninguna con ese nombre. Sólo se puede pedir aval a
+                organizaciones ya registradas.
+              </p>
+            )}
+            {errorAval && (
+              <p className="text-sm" style={{ color: "var(--danger)" }}>{errorAval}</p>
+            )}
+            <p className="text-sm" style={{ color: "var(--text-faint)" }}>
+              El pedido le llega a esa organización en su propio panel. Un
+              aval vale cuando quien lo da está verificada.
+            </p>
+          </div>
         )}
         {checks.length > 0 && (
           <ul className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -286,34 +432,102 @@ function EntityEditor({
         )}
         <ul className="flex flex-col gap-3">
           {necesidades.map((n) => (
-            <li key={n.id} className="flex flex-col gap-2"
-                style={{ borderTop: "1px solid var(--border-hairline)", paddingTop: 12 }}>
-              <div className="flex items-baseline justify-between gap-3">
-                <p style={{ color: "var(--text-strong)" }}>{n.supply?.name ?? "Aporte económico"}</p>
-                <span className="text-sm" style={{ color: "var(--text-faint)" }}>
-                  {relativeTime(n.updated_at)}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {(["urgente", "se_necesita", "cubierto"] as const).map((u) => (
-                  <button key={u} type="button" className="chip"
-                          aria-pressed={n.urgency === u}
-                          onClick={() => ponerUrgencia(n.id, u)}>
-                    {URGENCY_LABEL[u]}
-                  </button>
-                ))}
-              </div>
-            </li>
+            <FilaNecesidad
+              key={n.id}
+              n={n}
+              campo={campo}
+              onUrgencia={(u) => void ponerUrgencia(n.id, u)}
+              onCantidad={(q) => void ponerCantidad(n.id, q)}
+              onQuitar={() => void quitarNecesidad(n.id)}
+            />
           ))}
         </ul>
-        <select onChange={(e) => { void agregarInsumo(e.target.value); e.target.value = ""; }}
-                defaultValue="" style={campo}>
-          <option value="" disabled>Agregar un insumo del catálogo…</option>
-          {catalogo.map((c) => (
-            <option key={c.id} value={c.id}>{c.category} · {c.name}</option>
-          ))}
-        </select>
+        {/* Alta explícita: elegir del catálogo, cantidad opcional, botón.
+            El catálogo esconde lo que ya está en la lista. */}
+        <div className="flex flex-col gap-2"
+             style={{ borderTop: "1px solid var(--border-hairline)", paddingTop: 12 }}>
+          <span className="metric-label">Agregar un insumo</span>
+          <div className="flex flex-wrap gap-2">
+            <select value={nuevoInsumo} onChange={(e) => setNuevoInsumo(e.target.value)}
+                    style={{ ...campo, width: "auto", flex: "2 1 220px" }}>
+              <option value="">Elegí del catálogo…</option>
+              {catalogo
+                .filter((c) => !necesidades.some((n) => n.supply?.id === c.id))
+                .map((c) => (
+                  <option key={c.id} value={c.id}>{c.category} · {c.name}</option>
+                ))}
+            </select>
+            <input
+              value={nuevaCantidad}
+              onChange={(e) => setNuevaCantidad(e.target.value)}
+              placeholder="Cantidad (ej: 20 pares)"
+              style={{ ...campo, width: "auto", flex: "1 1 160px" }}
+            />
+            <button type="button" className="btn btn-secondary btn-sm"
+                    disabled={!nuevoInsumo} onClick={() => void agregarInsumo()}>
+              Agregar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Una necesidad: urgencia en tres toques, cantidad editable, quitar.
+ * La cantidad se guarda al salir del campo — sin botón, porque quien la
+ * escribe está apurado y "tocar afuera" es lo que hace igual.
+ */
+function FilaNecesidad({
+  n,
+  campo,
+  onUrgencia,
+  onCantidad,
+  onQuitar,
+}: {
+  n: Necesidad;
+  campo: React.CSSProperties;
+  onUrgencia: (u: Necesidad["urgency"]) => void;
+  onCantidad: (q: string | null) => void;
+  onQuitar: () => void;
+}) {
+  const [cantidad, setCantidad] = useState(n.quantity_note ?? "");
+
+  return (
+    <li className="flex flex-col gap-2"
+        style={{ borderTop: "1px solid var(--border-hairline)", paddingTop: 12 }}>
+      <div className="flex items-baseline justify-between gap-3">
+        <p style={{ color: "var(--text-strong)" }}>{n.supply?.name ?? "Aporte económico"}</p>
+        <span className="flex items-baseline gap-3">
+          <span className="text-sm" style={{ color: "var(--text-faint)" }}>
+            {relativeTime(n.updated_at)}
+          </span>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onQuitar}
+                  aria-label={`Quitar ${n.supply?.name ?? "esta necesidad"}`}>
+            Quitar
+          </button>
+        </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {(["urgente", "se_necesita", "cubierto"] as const).map((u) => (
+          <button key={u} type="button" className="chip"
+                  aria-pressed={n.urgency === u}
+                  onClick={() => onUrgencia(u)}>
+            {URGENCY_LABEL[u]}
+          </button>
+        ))}
+        <input
+          value={cantidad}
+          onChange={(e) => setCantidad(e.target.value)}
+          onBlur={() => {
+            const limpia = cantidad.trim();
+            if (limpia !== (n.quantity_note ?? "")) onCantidad(limpia || null);
+          }}
+          placeholder="Cantidad (ej: 20 pares)"
+          style={{ ...campo, width: "auto", flex: "1 1 160px" }}
+        />
+      </div>
+    </li>
   );
 }
