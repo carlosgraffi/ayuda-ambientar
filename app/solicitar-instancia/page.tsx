@@ -26,8 +26,8 @@ export default function Page() {
           <p className="lead">
             Si estás organizando la respuesta a una emergencia y te sirve un
             lugar donde estén todas las organizaciones con sus datos
-            chequeados, lo abrimos. No cuesta nada, al menos por ahora: los
-            costos de mantenimiento los cubren {brand.parentOrg.lab} y{" "}
+            chequeados, lo abrimos. No cuesta nada: los costos de
+            mantenimiento los cubren {brand.parentOrg.lab} y{" "}
             {brand.parentOrg.name}.
           </p>
 

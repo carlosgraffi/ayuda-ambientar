@@ -71,8 +71,8 @@ export default function Registrarse() {
             emergencia. Nada se publica hasta que otras organizaciones te
             avalen o una persona moderadora confirme la titularidad de tu
             cuenta: esa es la diferencia entre este directorio y una cadena
-            de alias por Instagram. Es 100% gratis, al menos por ahora: los
-            costos de mantenimiento los cubren {brand.parentOrg.lab} y{" "}
+            de alias por Instagram. Es 100% gratis: los costos de
+            mantenimiento los cubren {brand.parentOrg.lab} y{" "}
             {brand.parentOrg.name}.
           </p>
 

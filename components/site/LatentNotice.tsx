@@ -117,8 +117,8 @@ export function LatentNotice() {
 
       {/* La duda que frena a una organización chica es cuánto sale. */}
       <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-        Registrar una organización y pedir una instancia es 100% gratis, al
-        menos por ahora: los costos de mantenimiento los cubren{" "}
+        Registrar una organización y pedir una instancia es 100% gratis: los
+        costos de mantenimiento los cubren{" "}
         <a href={brand.parentOrg.labUrl} target="_blank" rel="noopener noreferrer">
           {brand.parentOrg.lab}
         </a>{" "}
@@ -126,7 +126,8 @@ export function LatentNotice() {
         <a href={brand.parentOrg.url} target="_blank" rel="noopener noreferrer">
           {brand.parentOrg.name}
         </a>
-        .
+        . Si querés contribuir a que este proyecto siga activo, podés
+        hacerlo <a href="/aportar/">acá</a>.
       </p>
     </div>
   );
