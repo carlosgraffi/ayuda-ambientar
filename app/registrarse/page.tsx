@@ -7,6 +7,7 @@ import { getBrowserClient } from "@/lib/admin/browser";
 import { PROVINCIAS } from "@/lib/provincias";
 import { ORG_TYPE_LABEL, type OrgType } from "@/lib/types";
 import { TopBar } from "@/components/site/TopBar";
+import { OrgPicker } from "@/components/admin/OrgPicker";
 
 /**
  * Auto-registro de entidades: el fin del cuello de botella.
@@ -166,11 +167,6 @@ function FormularioEntidad({ db, userId }: { db: SupabaseClient; userId: string 
     province: "", locality: "", contact_email: "", contact_phone: "",
     alias: "", holder_name: "", instagram: "", web: "",
   });
-  const [busqueda, setBusqueda] = useState("");
-  const [candidatas, setCandidatas] = useState<{ id: string; name: string }[]>([]);
-  const [sugeridas, setSugeridas] = useState<
-    { id: string; name: string; is_validator: boolean; verification_level: number; province: string | null }[]
-  >([]);
   const [avales, setAvales] = useState<{ id: string; name: string }[]>([]);
   const [estado, setEstado] = useState<"inicial" | "enviando" | "enviado">("inicial");
   const [error, setError] = useState<string | null>(null);
@@ -182,29 +178,6 @@ function FormularioEntidad({ db, userId }: { db: SupabaseClient; userId: string 
     [f.name],
   );
 
-  /* El directorio a la vista antes de pedir que busquen: nadie tiene por
-     qué saber el nombre exacto de la brigada de al lado. */
-  useEffect(() => {
-    void db
-      .from("organizations")
-      .select("id, name, is_validator, verification_level, province")
-      .gte("verification_level", 1)
-      .limit(30)
-      .then(({ data }) => setSugeridas((data ?? []) as never[]));
-  }, [db]);
-
-  useEffect(() => {
-    if (busqueda.trim().length < 3) return setCandidatas([]);
-    const t = setTimeout(async () => {
-      const { data } = await db
-        .from("organizations")
-        .select("id, name")
-        .ilike("name", `%${busqueda.trim()}%`)
-        .limit(5);
-      setCandidatas((data ?? []).filter((c) => !avales.some((a) => a.id === c.id)));
-    }, 300);
-    return () => clearTimeout(t);
-  }, [busqueda, db, avales]);
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -372,34 +345,6 @@ function FormularioEntidad({ db, userId }: { db: SupabaseClient; userId: string 
           que existís. Con dos avales tu entidad se publica sola, sin esperar
           a nadie.
         </p>
-        {avales.length < 3 && (() => {
-          /* Del directorio: las de tu provincia primero, validadoras antes
-             que el resto; el buscador queda para lo que no está a mano. */
-          const orden = (o: (typeof sugeridas)[number]) =>
-            (f.province && o.province === f.province ? 0 : 4) +
-            (o.is_validator ? 0 : 2) +
-            (o.verification_level >= 2 ? 0 : 1);
-          const enJuego = busqueda.trim().length >= 3
-            ? candidatas
-            : [...sugeridas]
-                .filter((s) => !avales.some((a) => a.id === s.id))
-                .sort((a, b) => orden(a) - orden(b) || a.name.localeCompare(b.name))
-                .slice(0, 6);
-          return enJuego.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {enJuego.map((c) => (
-                <button key={c.id} type="button" className="chip"
-                        onClick={() => { setAvales([...avales, c]); setBusqueda(""); }}>
-                  + {c.name}
-                </button>
-              ))}
-            </div>
-          ) : null;
-        })()}
-        {avales.length < 3 && (
-          <input value={busqueda} placeholder="¿No está en la lista? Buscala por nombre…"
-                 onChange={(e) => setBusqueda(e.target.value)} style={campo} />
-        )}
         {avales.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {avales.map((a) => (
@@ -409,6 +354,14 @@ function FormularioEntidad({ db, userId }: { db: SupabaseClient; userId: string 
               </button>
             ))}
           </div>
+        )}
+        {avales.length < 3 && (
+          <OrgPicker
+            db={db}
+            excluir={avales.map((a) => a.id)}
+            provincia={f.province || null}
+            onPick={(o) => setAvales([...avales, { id: o.id, name: o.name }])}
+          />
         )}
       </div>
 

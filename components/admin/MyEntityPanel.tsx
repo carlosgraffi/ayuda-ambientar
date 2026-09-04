@@ -1,9 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import {
+  AlertTriangle,
+  CircleCheck,
+  CircleDashed,
+  CircleMinus,
+  ShieldCheck,
+} from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { relativeTime } from "@/lib/format";
 import { URGENCY_LABEL, VERIFICATION_LABEL } from "@/lib/types";
+import { OrgPicker } from "@/components/admin/OrgPicker";
 
 /**
  * El panel del owner: su perfil, sus necesidades y su verificación.
@@ -42,13 +50,26 @@ interface Aval {
   endorser: { name: string } | null;
 }
 
-/** Cómo se lee cada estado desde el lado de quien pidió el aval. */
-const AVAL_LABEL: Record<string, string> = {
-  solicitado: "pedido enviado, sin respuesta todavía",
-  activo: "avaló",
-  ignorado: "no respondió",
-  en_revision: "en revisión",
-  revocado: "revocado",
+/**
+ * Cómo se lee cada estado desde el lado de quien pidió el aval: un badge
+ * y un ícono, no una oración — la lista tiene que escanearse de un
+ * vistazo desde el celular.
+ */
+const AVAL_UI: Record<
+  string,
+  { label: string; badge: string; Icono: typeof CircleCheck }
+> = {
+  activo: { label: "Avaló", badge: "badge-accent", Icono: CircleCheck },
+  solicitado: { label: "Esperando respuesta", badge: "badge-outline", Icono: CircleDashed },
+  ignorado: { label: "Sin respuesta", badge: "badge-neutral", Icono: CircleMinus },
+  en_revision: { label: "En revisión", badge: "badge-warning", Icono: AlertTriangle },
+  revocado: { label: "Revocado", badge: "badge-neutral", Icono: CircleMinus },
+};
+
+const CHECK_UI: Record<string, { label: string; badge: string }> = {
+  ok: { label: "Confirmado", badge: "badge-accent" },
+  pendiente: { label: "Pendiente", badge: "badge-outline" },
+  observado: { label: "Observado", badge: "badge-warning" },
 };
 
 interface Check {
@@ -136,9 +157,6 @@ function EntityEditor({
   const [avales, setAvales] = useState<Aval[]>([]);
   const [checks, setChecks] = useState<Check[]>([]);
   const [msj, setMsj] = useState<string | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [candidatas, setCandidatas] = useState<{ id: string; name: string }[]>([]);
-  const [sugeridas, setSugeridas] = useState<{ id: string; name: string }[]>([]);
   const [errorAval, setErrorAval] = useState<string | null>(null);
   const [nuevoInsumo, setNuevoInsumo] = useState("");
   const [nuevaCantidad, setNuevaCantidad] = useState("");
@@ -240,57 +258,27 @@ function EntityEditor({
       status: "solicitado", created_by: data.user?.id,
     });
     setErrorAval(error?.message ?? null);
-    setBusqueda("");
-    setCandidatas([]);
     await cargar();
   }
 
   /**
-   * El directorio primero, la búsqueda después: quien pide un aval no
-   * tiene por qué saber cómo se llama exactamente cada organización.
-   * Verificadas de su provincia arriba, validadoras antes que el resto.
+   * Retirar un pedido hecho por error. Sólo mientras nadie respondió: la
+   * política de la base exige status 'solicitado', y el `.select()` es
+   * para no decir "cancelado" sobre algo que la política filtró.
    */
-  useEffect(() => {
-    void db
-      .from("organizations")
-      .select("id, name, is_validator, verification_level, province")
-      .gte("verification_level", 1)
-      .neq("id", entidad.id)
-      .limit(30)
-      .then(({ data }) => {
-        const orden = (o: { is_validator: boolean; verification_level: number; province: string | null }) =>
-          (o.province === entidad.province ? 0 : 4) +
-          (o.is_validator ? 0 : 2) +
-          (o.verification_level >= 2 ? 0 : 1);
-        setSugeridas(
-          (data ?? [])
-            .sort((a, b) => orden(a) - orden(b) || a.name.localeCompare(b.name))
-            .slice(0, 6)
-            .map((o) => ({ id: o.id, name: o.name })),
-        );
-      });
-  }, [db, entidad.id, entidad.province]);
-
-  /* Mismo buscador que /registrarse: por nombre, de a 5, excluyendo la
-     propia entidad y las que ya están en la lista. */
-  useEffect(() => {
-    if (busqueda.trim().length < 3) {
-      setCandidatas([]);
-      return;
-    }
-    const t = setTimeout(async () => {
-      const { data } = await db
-        .from("organizations")
-        .select("id, name")
-        .ilike("name", `%${busqueda.trim()}%`)
-        .neq("id", entidad.id)
-        .limit(5);
-      setCandidatas(
-        (data ?? []).filter((c) => !avales.some((a) => a.endorser_org_id === c.id)),
-      );
-    }, 300);
-    return () => clearTimeout(t);
-  }, [busqueda, db, entidad.id, avales]);
+  async function cancelarPedido(id: string) {
+    const { data, error } = await db
+      .from("endorsements")
+      .delete()
+      .eq("id", id)
+      .eq("status", "solicitado")
+      .select("id");
+    setErrorAval(
+      error?.message ??
+        (!data?.length ? "No se pudo cancelar: el pedido ya fue respondido." : null),
+    );
+    await cargar();
+  }
 
   async function enviarARevision() {
     await db.from("organizations").update({ status: "en_revision" }).eq("id", entidad.id);
@@ -318,68 +306,91 @@ function EntityEditor({
 
       {/* Qué me falta para verificarme: la pregunta que este panel existe
           para responder. */}
-      <div className="card card-subtle flex flex-col gap-2" data-tour="verificacion">
-        <p className="eyebrow">Verificación</p>
-        <p style={{ color: "var(--text-strong)" }}>
-          {VERIFICATION_LABEL[f.verification_level as 0 | 1 | 2]}
-        </p>
+      <div className="card card-subtle flex flex-col gap-4" data-tour="verificacion">
+        <div className="flex items-center justify-between gap-3">
+          <p className="eyebrow">Verificación</p>
+          {f.verification_level >= 2 ? (
+            <span className="badge shrink-0"
+                  style={{ background: "var(--verde-50)", color: "var(--verde-700)" }}>
+              <ShieldCheck size={12} strokeWidth={2} aria-hidden />
+              {VERIFICATION_LABEL[2]}
+            </span>
+          ) : f.verification_level === 1 ? (
+            <span className="badge badge-warning shrink-0">{VERIFICATION_LABEL[1]}</span>
+          ) : (
+            <span className="badge badge-neutral shrink-0">Sin publicar</span>
+          )}
+        </div>
+
         {f.verification_level === 0 && (
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Tenés {activos} de 2 avales activos{huella ? " y huella pública confirmada" : ""}.
+            Tenés <b style={{ color: "var(--text-strong)" }}>{activos} de 2</b>{" "}
+            avales activos{huella ? " y huella pública confirmada" : ""}.
             {activos >= 1 && !huella
               ? " Con un aval más te publicás sola — o cuando la moderación confirme tu huella pública."
               : " Con dos avales de organizaciones verificadas tu entidad se publica sola."}
           </p>
         )}
         {f.moderation_note && (
-          <p className="text-sm" style={{ color: "var(--warning)" }}>
-            Mensaje de moderación: {f.moderation_note}
+          <p className="text-sm flex items-start gap-2" style={{ color: "var(--warning)" }}>
+            <AlertTriangle size={15} strokeWidth={2} aria-hidden className="mt-0.5 shrink-0" />
+            <span>Mensaje de moderación: {f.moderation_note}</span>
           </p>
         )}
+
         {avales.length > 0 && (
-          <ul className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {avales.map((a) => (
-              <li key={a.id}>
-                {a.endorser?.name} — {AVAL_LABEL[a.status] ?? a.status}
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-2">
+            <span className="metric-label">Tus avales</span>
+            <ul className="flex flex-col gap-1.5">
+              {avales.map((a) => {
+                const ui = AVAL_UI[a.status] ?? AVAL_UI.solicitado;
+                return (
+                  <li key={a.id} className="flex items-center justify-between gap-3"
+                      style={{
+                        background: "var(--surface-card)",
+                        border: "1px solid var(--border-hairline)",
+                        borderRadius: "var(--r-field)",
+                        padding: "10px 14px",
+                      }}>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <ui.Icono size={16} strokeWidth={1.75} aria-hidden
+                                style={{ color: "var(--text-faint)" }} className="shrink-0" />
+                      <span className="truncate" style={{ color: "var(--text-strong)" }}>
+                        {a.endorser?.name}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      <span className={`badge ${ui.badge}`}>{ui.label}</span>
+                      {a.status === "solicitado" && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => void cancelarPedido(a.id)}
+                          aria-label={`Cancelar el pedido a ${a.endorser?.name ?? "esta organización"}`}
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         )}
+
         {/* Pedir un aval: la mitad del camino a publicarse. Se muestra
             mientras quede cupo (la base admite hasta 3 pedidos). */}
         {avales.length < 3 && (
           <div className="flex flex-col gap-2">
             <span className="metric-label">Pedir un aval</span>
-            {/* Primero el directorio; el buscador es para lo que no está
-                a la vista. */}
-            {(() => {
-              const enJuego = busqueda.trim().length >= 3
-                ? candidatas
-                : sugeridas.filter((s) => !avales.some((a) => a.endorser_org_id === s.id));
-              return enJuego.length > 0 ? (
-                <ul className="flex flex-wrap gap-2">
-                  {enJuego.map((c) => (
-                    <li key={c.id}>
-                      <button type="button" className="chip" onClick={() => void pedirAval(c.id)}>
-                        Pedirle aval a {c.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null;
-            })()}
-            <input
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="¿No está en la lista? Buscala por nombre…"
-              style={campo}
+            <OrgPicker
+              db={db}
+              excluir={[entidad.id, ...avales.map((a) => a.endorser_org_id)]}
+              provincia={entidad.province}
+              onPick={(o) => void pedirAval(o.id)}
+              placeholder="Elegí quién te conoce del directorio…"
             />
-            {busqueda.trim().length >= 3 && candidatas.length === 0 && (
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                No aparece ninguna con ese nombre. Sólo se puede pedir aval a
-                organizaciones ya registradas.
-              </p>
-            )}
             {errorAval && (
               <p className="text-sm" style={{ color: "var(--danger)" }}>{errorAval}</p>
             )}
@@ -389,15 +400,26 @@ function EntityEditor({
             </p>
           </div>
         )}
+
         {checks.length > 0 && (
-          <ul className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {checks.map((c, i) => (
-              <li key={i}>
-                {CHECK_LABEL[c.check_type] ?? c.check_type}: {c.result}
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-2">
+            <span className="metric-label">Checklist de moderación</span>
+            <ul className="flex flex-col gap-1.5">
+              {checks.map((c, i) => {
+                const ui = CHECK_UI[c.result] ?? CHECK_UI.pendiente;
+                return (
+                  <li key={i} className="flex items-center justify-between gap-3">
+                    <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+                      {CHECK_LABEL[c.check_type] ?? c.check_type}
+                    </span>
+                    <span className={`badge shrink-0 ${ui.badge}`}>{ui.label}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         )}
+
         {f.status === "borrador" && (
           <button className="btn btn-secondary btn-sm self-start" onClick={enviarARevision}>
             Enviar a revisión

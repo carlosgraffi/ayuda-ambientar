@@ -148,6 +148,20 @@ export default async function Page() {
             ¿Cómo <b>ayudar</b> ante una catástrofe?
           </h1>
           <p className="lead mt-5">{brand.description}</p>
+          {/* Sin campaña abierta, la acción que más rinde es que las
+              organizaciones se pre-registren antes de la temporada. */}
+          {latente && (
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <a href="/registrarse/" className="btn btn-primary btn-md">
+                Pre-registrá tu organización
+                <ArrowRight size={17} strokeWidth={1.75} aria-hidden />
+              </a>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                La temporada 2026–2027 se prepara ahora: cinco minutos hoy y
+                tus datos quedan verificados para cuando hagan falta.
+              </p>
+            </div>
+          )}
         </section>
 
         {latente && (

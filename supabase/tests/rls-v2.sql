@@ -92,6 +92,22 @@ values ('b0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-0000000
        ('b0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001',
         'solicitado', 'd0000000-0000-0000-0000-000000000001');
 
+-- Un pedido hecho por error se puede retirar mientras nadie respondió
+-- (y libera cupo). Se borra y se vuelve a pedir para seguir la historia.
+delete from endorsements
+ where endorser_org_id = 'b0000000-0000-0000-0000-000000000002'
+   and endorsed_org_id = 'c0000000-0000-0000-0000-000000000001';
+do $$
+declare n int;
+begin
+  select count(*) into n from endorsements
+   where endorsed_org_id = 'c0000000-0000-0000-0000-000000000001';
+  assert n = 1, 'el owner retira su propio pedido sin responder';
+end $$;
+insert into endorsements (endorser_org_id, endorsed_org_id, status, created_by)
+values ('b0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001',
+        'solicitado', 'd0000000-0000-0000-0000-000000000001');
+
 -- ═══ 4 · Un aval no alcanza; dos publican con nivel 1 ════════════════
 set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-000000000001","role":"authenticated"}';
 update endorsements set status = 'activo',
@@ -153,6 +169,22 @@ begin
 end $$;
 reset role;
 reset request.jwt.claims;
+
+-- Un aval YA DADO no lo borra quien lo recibió: es una declaración de la
+-- otra organización.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-000000000001","role":"authenticated"}';
+delete from endorsements
+ where endorsed_org_id = 'c0000000-0000-0000-0000-000000000001' and status = 'activo';
+reset role;
+reset request.jwt.claims;
+do $$
+declare n int;
+begin
+  select count(*) into n from endorsements
+   where endorsed_org_id = 'c0000000-0000-0000-0000-000000000001' and status = 'activo';
+  assert n = 2, 'un aval dado no se borra desde afuera';
+end $$;
 
 -- ═══ 5 · La auto-activación la metió en el evento de su provincia ════
 do $$

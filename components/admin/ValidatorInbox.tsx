@@ -88,18 +88,22 @@ export function ValidatorInbox({ db }: { db: SupabaseClient }) {
       <ul className="flex flex-col gap-3">
         {pedidos.map((p) => (
           <li key={p.id} className="card flex flex-col gap-3">
-            <div>
-              <p className="eyebrow" style={{ color: "var(--text-faint)" }}>
-                {p.endorsed?.locality ?? p.endorsed?.province ?? ""} · pidió tu aval{" "}
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="eyebrow" style={{ color: "var(--text-faint)" }}>
+                  {[p.endorsed?.locality, p.endorsed?.province]
+                    .filter(Boolean)
+                    .join(", ") || "Sin ubicación declarada"}
+                </p>
+                <h3 className="heading-3 mt-1">{p.endorsed?.name}</h3>
+              </div>
+              <span className="badge badge-outline shrink-0">
                 {relativeTime(p.created_at)}
-              </p>
-              <p className="mt-1" style={{ color: "var(--text-strong)" }}>
-                {p.endorsed?.name}
-              </p>
-              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                {p.endorsed?.description}
-              </p>
+              </span>
             </div>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              {p.endorsed?.description}
+            </p>
             <input
               value={nota[p.id] ?? ""}
               onChange={(e) => setNota({ ...nota, [p.id]: e.target.value })}

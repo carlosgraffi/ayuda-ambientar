@@ -13,21 +13,30 @@ import { Megaphone, PlusCircle, Send } from "lucide-react";
  * buena noticia— y ofrecer lo que sí sirve mientras tanto. Las tres cosas
  * de acá abajo no dependen de que exista una catástrofe y no piden plata
  * en nombre de nadie.
+ *
+ * El pre-registro va primero y con botón primario: es la única de las
+ * tres que deja algo concreto listo para la temporada que viene, y el
+ * momento de hacerlo es justamente cuando no está pasando nada.
  */
 
-const OPCIONES = [
+const OPCIONES: {
+  icono: typeof Megaphone;
+  titulo: string;
+  texto: string;
+  accion?: { texto: string; href: string; primaria?: boolean };
+}[] = [
+  {
+    icono: PlusCircle,
+    titulo: "Pre-registrá tu organización",
+    texto:
+      "Bomberos voluntarios, brigadas y espacios comunitarios trabajan todo el año, no sólo durante el fuego. Pre-registrarse lleva cinco minutos y deja los datos verificados antes de que empiece la temporada 2026–2027: prevenir es más fácil que correr después.",
+    accion: { texto: "Pre-registrarla ahora", href: "/registrarse/", primaria: true },
+  },
   {
     icono: Megaphone,
     titulo: "Difundilo antes de que haga falta",
     texto:
       "Cuando hay una emergencia, la información circula en horas y la gente busca a las apuradas. Que este sitio ya exista en la cabeza de alguien vale más que cualquier campaña de último momento.",
-  },
-  {
-    icono: PlusCircle,
-    titulo: "Registrá tu organización",
-    texto:
-      "Bomberos voluntarios, brigadas y espacios comunitarios trabajan todo el año, no sólo durante el fuego. Registrarse lleva cinco minutos y deja los datos verificados y listos para la próxima emergencia — sin esperar a que haya una.",
-    accion: { texto: "Registrarla ahora", href: "/registrarse/" },
   },
   {
     icono: Send,
@@ -54,7 +63,10 @@ export function LatentNotice() {
         </p>
         <p style={{ color: "var(--text-muted)" }}>
           Cuando haya una emergencia, acá va a estar el listado chequeado.
-          Mientras tanto hay tres cosas que sirven más de lo que parecen.
+          Y ese listado se arma ahora: cada organización que se pre-registra
+          antes de la temporada 2026–2027 llega con sus datos ya verificados
+          el día que se los necesita. Mientras tanto hay tres cosas que sirven más
+          de lo que parecen.
         </p>
       </div>
 
@@ -67,7 +79,11 @@ export function LatentNotice() {
                 size={24}
                 strokeWidth={1.75}
                 aria-hidden
-                style={{ color: "var(--text-faint)" }}
+                style={{
+                  color: o.accion?.primaria
+                    ? "var(--accent-600)"
+                    : "var(--text-faint)",
+                }}
               />
               <h3 className="heading-3">{o.titulo}</h3>
               <p className="grow" style={{ color: "var(--text-muted)" }}>
@@ -76,7 +92,9 @@ export function LatentNotice() {
               {o.accion && (
                 <a
                   href={o.accion.href}
-                  className="btn btn-secondary btn-sm self-start"
+                  className={`btn btn-sm self-start ${
+                    o.accion.primaria ? "btn-primary" : "btn-secondary"
+                  }`}
                 >
                   {o.accion.texto}
                 </a>

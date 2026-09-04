@@ -45,6 +45,15 @@ interface Reporte {
   org: { name: string; id: string } | null;
 }
 
+/** El estado con la urgencia visible: lo que espera acción, en ámbar. */
+const ESTADO_BADGE: Record<string, { label: string; tono: string }> = {
+  en_revision: { label: "En revisión", tono: "badge-warning" },
+  borrador: { label: "Borrador", tono: "badge-outline" },
+  verificada: { label: "Publicada", tono: "badge-accent" },
+  pausada: { label: "Pausada", tono: "badge-neutral" },
+  archivada: { label: "Archivada", tono: "badge-neutral" },
+};
+
 const CHECKS: { tipo: string; label: string; ayuda: string }[] = [
   { tipo: "titularidad", label: "Titularidad", ayuda: "El alias resuelve al nombre de la entidad o de su responsable declarada." },
   { tipo: "registro", label: "Registro", ayuda: "CUIT, personería o registro provincial de brigadas/bomberos." },
@@ -126,10 +135,15 @@ export function ModeratorPanel({ db }: { db: SupabaseClient }) {
                     {f.name}
                   </span>
                   <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    {ORG_TYPE_LABEL[f.type]} · {f.locality ?? f.province} · nivel {f.verification_level}
+                    {ORG_TYPE_LABEL[f.type]} · {f.locality ?? f.province}
                   </span>
                 </span>
-                <span className="badge badge-neutral shrink-0">{f.status.replace("_", " ")}</span>
+                <span className="flex shrink-0 items-center gap-1.5">
+                  <span className="badge badge-outline">Nivel {f.verification_level}</span>
+                  <span className={`badge ${ESTADO_BADGE[f.status]?.tono ?? "badge-neutral"}`}>
+                    {ESTADO_BADGE[f.status]?.label ?? f.status.replace("_", " ")}
+                  </span>
+                </span>
               </button>
             </li>
           ))}
