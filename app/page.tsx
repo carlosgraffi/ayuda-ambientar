@@ -216,6 +216,8 @@ export default async function Page() {
             <p style={{ color: "var(--text-muted)" }}>
               Si estás organizando la respuesta a una catástrofe y te sirve
               una instancia, <a href="/solicitar-instancia/">te la abrimos</a>.
+              Es 100% gratis, al menos por ahora: los costos de mantenimiento
+              los cubren {brand.parentOrg.lab} y {brand.parentOrg.name}.
             </p>
           </div>
         </section>

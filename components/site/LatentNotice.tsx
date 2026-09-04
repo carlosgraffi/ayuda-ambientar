@@ -1,4 +1,5 @@
 import { Megaphone, PlusCircle, Send } from "lucide-react";
+import { brand } from "@/lib/brand";
 
 /**
  * Qué muestra la portada cuando no hay ninguna campaña abierta.
@@ -113,6 +114,20 @@ export function LatentNotice() {
           );
         })}
       </ul>
+
+      {/* La duda que frena a una organización chica es cuánto sale. */}
+      <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+        Registrar una organización y pedir una instancia es 100% gratis, al
+        menos por ahora: los costos de mantenimiento los cubren{" "}
+        <a href={brand.parentOrg.labUrl} target="_blank" rel="noopener noreferrer">
+          {brand.parentOrg.lab}
+        </a>{" "}
+        y{" "}
+        <a href={brand.parentOrg.url} target="_blank" rel="noopener noreferrer">
+          {brand.parentOrg.name}
+        </a>
+        .
+      </p>
     </div>
   );
 }
