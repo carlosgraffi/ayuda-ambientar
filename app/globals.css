@@ -703,6 +703,20 @@ html[data-theme="dark"] {
     color: var(--white);
     box-shadow: var(--shadow-md);
   }
+
+  /* Acento = el color del desastre declarado con data-disaster en un
+     ancestro. Sin declararlo cae en tinta, igual que el primario: nunca
+     inventamos un color de emergencia que no se declaró. */
+  .btn-accent {
+    background: var(--accent-600);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-accent:hover {
+    background: var(--accent-500);
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+  }
   html[data-theme="dark"] .btn-primary {
     background: var(--ink-50);
     color: var(--ink-900);

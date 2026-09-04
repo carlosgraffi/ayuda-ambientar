@@ -151,8 +151,18 @@ export default async function Page() {
           {/* Sin campaña abierta, la acción que más rinde es que las
               organizaciones se pre-registren antes de la temporada. */}
           {latente && (
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <a href="/registrarse/" className="btn btn-primary btn-md">
+            /* data-disaster="fuego": el pre-registro es de cara a la
+               temporada de incendios, así que hereda ese acento. */
+            <div
+              data-disaster="fuego"
+              className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3"
+              style={{
+                background: "var(--accent-soft)",
+                borderRadius: "var(--r-card-inner)",
+                padding: "var(--sp-4) var(--sp-5)",
+              }}
+            >
+              <a href="/registrarse/" className="btn btn-accent btn-md">
                 Pre-registrá tu organización
                 <ArrowRight size={17} strokeWidth={1.75} aria-hidden />
               </a>

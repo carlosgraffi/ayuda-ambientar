@@ -73,8 +73,21 @@ export function LatentNotice() {
       <ul className="grid grid-cols-1 items-start gap-4 md:grid-cols-3">
         {OPCIONES.map((o) => {
           const Icono = o.icono;
+          const destacada = o.accion?.primaria;
           return (
-            <li key={o.titulo} className="card flex h-full flex-col gap-3">
+            <li
+              key={o.titulo}
+              data-disaster={destacada ? "fuego" : undefined}
+              className="card flex h-full flex-col gap-3"
+              style={
+                destacada
+                  ? {
+                      background: "var(--accent-soft)",
+                      borderColor: "var(--accent-500)",
+                    }
+                  : undefined
+              }
+            >
               <Icono
                 size={24}
                 strokeWidth={1.75}
@@ -93,7 +106,7 @@ export function LatentNotice() {
                 <a
                   href={o.accion.href}
                   className={`btn btn-sm self-start ${
-                    o.accion.primaria ? "btn-primary" : "btn-secondary"
+                    o.accion.primaria ? "btn-accent" : "btn-secondary"
                   }`}
                 >
                   {o.accion.texto}
