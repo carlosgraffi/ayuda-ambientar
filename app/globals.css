@@ -672,12 +672,16 @@ html[data-theme="dark"] {
     font-family: var(--font-sans);
     font-weight: var(--fw-medium);
     letter-spacing: -0.005em;
-    line-height: 1;
+    line-height: 1.15;
     border: 1px solid transparent;
     border-radius: var(--r-control);
     cursor: pointer;
     text-decoration: none;
-    white-space: nowrap;
+    /* Sin nowrap: una etiqueta que no entra envuelve a dos líneas en vez
+       de ensanchar la página, que en mobile rompía todo el layout. El
+       min-height mantiene la altura de una línea. */
+    max-width: 100%;
+    text-align: center;
     transition: var(--transition-control);
   }
   .btn:active {

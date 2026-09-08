@@ -44,7 +44,10 @@ export function ClosedNotice({
         que no conviene transferir desde acá.
       </p>
       {/* Nunca un callejón sin salida: si no hay edición vigente de este
-          territorio, al menos la portada dice qué hay abierto en otros. */}
+          territorio, al menos la portada dice qué hay abierto en otros.
+          La portada va con URL absoluta: en un dominio propio como
+          ayudapatagonia.ar el borde reescribe `/` a esta misma instancia,
+          y el botón volvía a la página en la que ya estabas. */}
       {vigente ? (
         <a
           href={instancePath(vigente)}
@@ -54,8 +57,11 @@ export function ClosedNotice({
           <ArrowRight size={17} strokeWidth={1.75} aria-hidden />
         </a>
       ) : (
-        <a href="/" className="btn btn-secondary btn-md self-start">
-          Ver qué campañas están abiertas en {brand.name}
+        <a
+          href={`${brand.url}/`}
+          className="btn btn-secondary btn-md self-start"
+        >
+          Ver las campañas abiertas
           <ArrowRight size={17} strokeWidth={1.75} aria-hidden />
         </a>
       )}
